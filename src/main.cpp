@@ -1,224 +1,182 @@
-/****************************************************************************
-Copyright (c) 2021      Yinbaiyuan
+// #include "FastLED.h"            // 此示例程序需要使用FastLED库
 
-https://www.yinbaiyuan.com
+// #define NUM_LEDS 1              // LED灯珠数量
+// #define DATA_PIN 5              // Arduino输出控制信号引脚
+// #define LED_TYPE WS2812         // LED灯带型号
+// #define COLOR_ORDER GRB         // RGB灯珠中红色、绿色、蓝色LED的排列顺序
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// uint8_t max_bright = 128;       // LED亮度控制变量，可使用数值为 0 ～ 255， 数值越大则光带亮度越高
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+// CRGB leds[NUM_LEDS];            // 建立光带leds
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-****************************************************************************/
+// void setup() { 
+//   // LEDS.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);  // 初始化光带 
+//   FastLED.addLeds<WS2812Controller800Khz, NUM_LEDS, GRB>((CRGB *)leds, 1 * 1);
+//   FastLED.setBrightness(max_bright);                            // 设置光带亮度
+
+// //   pinMode(34, OUTPUT);   // 开启引脚输出模式（有个别引脚不可以设置输出模式，在文章后面会提到）
+// //   digitalWrite(34,HIGH);  //输出高电平，LOW就是低电平
+
+//    Serial.begin(115200);
+// }
+
+// void loop() { 
+// //   leds[0] = CRGB::Red;          // 设置光带中第一个灯珠颜色为红色，leds[0]为第一个灯珠，leds[1]为第二个灯珠
+// //   FastLED.setBrightness(max_bright++);
+// //   FastLED.show();                // 更新LED色彩
+
+//   delay(500);                     // 等待500毫秒
+//   max_bright++;
+//   if (max_bright % 2 == 0)
+//   {
+//     digitalWrite(5,HIGH);  //输出高电平，LOW就是低电平
+//     Serial.printf("-----HIGHT-----\n");
+
+//   }
+//   else
+//   {
+//      digitalWrite(5,LOW);  //输出高电平，LOW就是低电平
+//      Serial.printf("-----LOW-----\n");
+//   }
+  
+// }
+
 
 #include <Arduino.h>
-#include "Dot2D/dot2d.h"
-#include "FastLED.h"
-#include "Button.h"
-#include "EC11.h"
-#include <math.h>
-#include "Examples/Matrix/Matrix.h"
-#include "Examples/TripleClick/TripleClick.h"
-#include "Examples/Snake/Snake.h"
-#include "Examples/Text/Text.h"
-#define BASE_BTN_COUNT 1
-// LED矩阵宽
-#define MATRIX_WIDTH 40
-// LED矩阵高
-#define MATRIX_HEIGHT 7
-// 点阵屏驱动引脚
-#define MATRIX_LED_PIN 4
-// 屏幕最大亮度
-#define MATRIX_MAX_BRIGHTNESS 10
+#include "OneButton.h"
+#include <ESP32Encoder.h>
+//按键配置
+#define EC11_A_PIN 25
+#define EC11_B_PIN 26
+#define EC11_K_PIN 4//按键引脚
 
-#define PIN_INPUT 14
-#define PIN_ENCODER_A 15
-#define PIN_ENCODER_B 32
-// Attach a LED using GPIO 25 and VCC. The LED is on when output level is LOW.
-#define PIN_LED 27
+ESP32Encoder encoder;
+OneButton SW(EC11_K_PIN, false, false);
 
-void doubleClick();
-void Click();
+int lastEncoderValue = 0;
+int now_count = 0;
+int mode = 0;   //0,1两种mode,可自行添加
+bool activate = true;
 
-OneButton button(PIN_INPUT, false, false);
-ZXL::EC11 encoder;
-
-dot2d::Director *director = nullptr;
-extern float Voltage;
-
-void click(void *btn)
-{
-  Button *button = (Button *)btn;
-  dot2d::EventButton event(button->type(), dot2d::EventButton::ButtonEventCode::BEC_CLICK);
-  auto dispatcher = dot2d::Director::getInstance()->getEventDispatcher();
-  dispatcher->dispatchEvent(&event);
+//按键单击回调函数
+void click() {
+    if (mode == 0) {
+        Serial.println("Click: MUTE");
+       
+    }
+    if (mode == 1) {
+        Serial.println("Enter");
+       
+    }
 }
 
-// 必须要实现的dot2d导演对象代理方法
-class MainDelegate : public dot2d::DirectorDelegate
-{
-
-  void render()
-  {
-    FastLED.show();
-    // 输出ESP32内存占用情况
-    // Serial.printf("-----Free Heap Mem : %d [%.2f%%]-----\n",
-    //               ESP.getFreeHeap(),
-    //               ESP.getFreeHeap() / (double)ESP.getHeapSize() * 100);
-    // Serial.printf("-----Free PSRAM Mem: %d [%.2f%%]-----\n",
-    //               ESP.getFreePsram(),
-    //               ESP.getFreePsram() / (double)ESP.getPsramSize() * 100);
-  }
-
-  size_t write(uint8_t c)
-  {
-    return Serial.write(c);
-  }
-
-  // 返回一个RGB对象的顺序表指针，用于初始化硬件屏幕
-  void initMatrix(dot2d::DTRGB *data)
-  {
-    FastLED.addLeds<WS2812Controller800Khz, MATRIX_LED_PIN, GRB>((CRGB *)data, MATRIX_WIDTH * MATRIX_HEIGHT);
-  }
-
-  // 用于计算坐标为(x,y)的灯珠在RGB对象顺序表中的具体位置，适配不同排列方式的屏幕，在此处修改
-  // uint32_t dotOrder(uint16_t x, uint16_t y)
-  // {
-  //   uint16_t order = y * MATRIX_WIDTH;
-  //   if (y % 2 == 0)
-  //   {
-  //     order += x;
-  //   }
-  //   else
-  //   {
-  //     order += (MATRIX_WIDTH - 1 - x);
-  //   }
-  //   return order;
-  // }
-
-  // uint32_t dotOrder(uint16_t x, uint16_t y)
-  // {
-  //   uint16_t order = x * MATRIX_HEIGHT;
-  //   if (x % 2 == 0)
-  //   {
-  //     order += y;
-  //   }
-  //   else
-  //   {
-  //     order += (MATRIX_HEIGHT - 1 - y);
-  //   }
-  //   return order;
-  // }
-
-  uint32_t dotOrder(uint16_t x, uint16_t y)
-  {
-    int8_t mask_x = 9;
-    int8_t mask_y = 5;
-    int8_t offset = 0;
-
-    if (x > mask_x)
-    {
-      offset = -1;
+//按键长按回调函数
+void longclick() {
+    if (activate) {   //如果旋钮转动，则不切换状态
+        Serial.println("Longclick: Mode Change");
+        Serial.print("current mode: ");
+        if (mode == 0) {
+            mode = 1;
+            Serial.println("Arrow");
+            return;
+        }
+        if (mode == 1) {
+            mode = 0;
+            Serial.println("Media");
+            return;
+        }
     }
-    else if (x >= 5 && y > 5)
-    {
-      offset = -1;
-    }
-
-    uint16_t factor = floor(x / 5);
-
-    uint32_t order = y * 5 + x % 5 + factor * 35 + offset;
-
-    // Serial.printf("-----order=%d-----\n", order);
-
-    return order;
-  }
-};
-
-void setup()
-{
-  //----------------开启串口通信----------------
-  Serial.begin(115200);
-
-  // 设置WS2812屏幕亮度
-  FastLED.setBrightness(MATRIX_MAX_BRIGHTNESS);
-
-  // enable the standard led on pin 13.
-  // pinMode(PIN_LED, OUTPUT); // sets the digital pin as output
-  pinMode(PIN_ENCODER_A, INPUT_PULLUP);
-  pinMode(PIN_ENCODER_B, INPUT_PULLUP);
-  button.attachDoubleClick(doubleClick);
-  button.attachClick(Click);
-
-  //----------------初始化Dot2d引擎及渲染画布----------------
-  director = dot2d::Director::getInstance();            // 获取导演对象
-  director->setDelegate(new MainDelegate());            // 设置导演代理
-  director->setFramesPerSecond(30);                     // 设置帧速率
-  director->initDotCanvas(MATRIX_WIDTH, MATRIX_HEIGHT); // 初始化导演画布
-
-  // 初始化应用场景 不同场景 演示不同的示例
-
-  // director->runWithScene(dot2d::Matrix::create());
-  //
-  // director->runWithScene(dot2d::TripleClick::create());
-
-  // director->runWithScene(dot2d::Snake::create());
-  director->runWithScene(dot2d::Text::create());
+    activate = true;
 }
 
-void loop()
-{
-  vTaskDelay(10);
-  button.tick();
-  director->mainLoop();
-
-  ZXL::EC11Event e;
-  if (encoder.read(&e))
-  {
-    if (e.type == ZXL::EC11Event::Type::StepCW)
-    {
-      // director->runWithScene(dot2d::Text::create());
-      if (Voltage < 3.3)
-      {
-        Voltage += 0.1;
-      }
+//按键双击回调函数
+void doubleclick() {
+    if (mode == 0) {
+         Serial.println("Doubleclick: Input test");
+   		 
     }
-    else
-    {
-      // director->runWithScene(dot2d::Matrix::create());
-      if (Voltage > 0.1)
-      {
-        Voltage -= 0.1;
-      }
+    if (mode == 1) {
+         Serial.println("Doubleclick: Input test");
+    	
     }
-  }
-
-  for (int i = 0; i < 10; i++)
-  {
-    encoder.checkPins(digitalRead(PIN_ENCODER_A), digitalRead(PIN_ENCODER_B));
-    delay(1);
-  }
 }
 
-void doubleClick()
-{
-  Serial.println("double clicked.");
-  director->runWithScene(dot2d::Matrix::create());
-} // doubleClick
+void setup() {
+    Serial.begin(115200);
+    ESP32Encoder::useInternalWeakPullResistors = UP;
+    encoder.attachSingleEdge(EC11_A_PIN, EC11_B_PIN);
 
-void Click()
-{
-  Serial.println("clicked.");
-  director->runWithScene(dot2d::Text::create());
+    // pinMode(EC11_K_PIN, INPUT_PULLUP);
+
+    //初始化按键事件检测
+    SW.attachClick(click);
+    // SW.attachDoubleClick(doubleclick);
+    // SW.attachLongPressStop(longclick);
+    // SW.setDebounceTicks(20);//滤波(ms)
+    // SW.setClickTicks(200);
+    // SW.setPressTicks(500);
+
+    Serial.println("Starting BLE work");
+
+}
+
+void loop() {
+    // vTaskDelay(30 / portTICK_PERIOD_MS);
+    ets_delay_us(30*1000); 
+    
+    SW.tick();
+
+    if (1) {
+        if (lastEncoderValue != encoder.getCount()) {
+            now_count = encoder.getCount();
+            if (now_count != lastEncoderValue) {
+                if (!SW.isIdle()) {         //检测按键是否空闲
+                    activate = false;
+                    Serial.print("(Long_pressed)Encoder value: ");
+                    Serial.println(now_count);
+                } else {
+                    Serial.print("Encoder value: ");
+                    Serial.println(now_count);
+                }
+            }
+
+            if (now_count > lastEncoderValue) {
+                if (!SW.isIdle()) {         //检测按键是否空闲
+                    if (mode == 0) {}     //模式0按钮按下顺时针功能
+                    if (mode == 1) {		//模式1按钮按下顺时针功能
+                        // bleKeyboard.write(KEY_DOWN_ARROW);
+                        Serial.println("DOWN_ARROW");
+                    }
+                } else {
+                    if (mode == 0) {	//模式0顺时针功能
+                        // bleKeyboard.write(KEY_MEDIA_VOLUME_UP);
+                        Serial.println("MEDIA_VOLUME_UP");
+                    }
+                    if (mode == 1) {	//模式1顺时针功能
+                        // bleKeyboard.write(KEY_RIGHT_ARROW);
+                        Serial.println("RIGHT_ARROW");
+                    }
+                }
+            }
+            if (now_count < lastEncoderValue) {
+                if (!SW.isIdle()) {         //检测按键是否空闲
+                    if (mode == 0) {}    //模式0按钮按下逆时针功能
+                    if (mode == 1) {	//模式1按钮按下逆时针功能
+                        // bleKeyboard.write(KEY_UP_ARROW);
+                        Serial.println("UP_ARROW");
+                    }
+                } else {
+                    if (mode == 0) {	//模式0逆时针功能
+                        // bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
+                        Serial.println("MEDIA_VOLUME_DOWN");
+                    }
+                    if (mode == 1) {	//模式1逆时针功能
+                        // bleKeyboard.write(KEY_LEFT_ARROW);
+                        Serial.println("LEFT_ARROW");
+                    }
+                }
+            }
+            lastEncoderValue = now_count;
+        }
+    }
 }
