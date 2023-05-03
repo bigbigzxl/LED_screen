@@ -183,32 +183,32 @@
 //   button.tick();
 //   director->mainLoop();
 
-//   // ZXL::EC11Event e;
-//   // if (encoder.read(&e))
-//   // {
-//   //   if (e.type == ZXL::EC11Event::Type::StepCW)
-//   //   {
-//   //     // director->runWithScene(dot2d::Text::create());
-//   //     if (Voltage < 3.3)
-//   //     {
-//   //       Voltage += 0.1;
-//   //     }
-//   //   }
-//   //   else
-//   //   {
-//   //     // director->runWithScene(dot2d::Matrix::create());
-//   //     if (Voltage > 0.1)
-//   //     {
-//   //       Voltage -= 0.1;
-//   //     }
-//   //   }
-//   // }
+//   ZXL::EC11Event e;
+//   if (encoder.read(&e))
+//   {
+//     if (e.type == ZXL::EC11Event::Type::StepCW)
+//     {
+//       // director->runWithScene(dot2d::Text::create());
+//       if (Voltage < 3.3)
+//       {
+//         Voltage += 0.1;
+//       }
+//     }
+//     else
+//     {
+//       // director->runWithScene(dot2d::Matrix::create());
+//       if (Voltage > 0.1)
+//       {
+//         Voltage -= 0.1;
+//       }
+//     }
+//   }
 
-//   // for (int i = 0; i < 10; i++)
-//   // {
-//   //   encoder.checkPins(digitalRead(PIN_ENCODER_A), digitalRead(PIN_ENCODER_B));
-//   //   delay(1);
-//   // }
+//   for (int i = 0; i < 10; i++)
+//   {
+//     encoder.checkPins(digitalRead(PIN_ENCODER_A), digitalRead(PIN_ENCODER_B));
+//     delay(1);
+//   }
 // }
 
 // void doubleClick()

@@ -68,7 +68,7 @@ const uint8_t icon_collect[] PROGMEM =
 bool TripleClick::init()
 {
     TripleClickLayer *rootLayer = TripleClickLayer::create();
-    rootLayer->setContentSize(Size(32, 8));
+    rootLayer->setContentSize(Size(40, 8));
     this->addChild(rootLayer);
     rootLayer->initLayer();
     return true;
@@ -86,14 +86,14 @@ bool TripleClickLayer::initLayer()
     FrameSprite *coin = FrameSprite::create(icon_coin + 2, GetUint16(icon_coin));
     this->addChild(coin);
     coin->setPosition(12, -6);
-    // coin->setAutoSwitch(true);
+    coin->setAutoSwitch(true);
     MoveBy *moveBy2 = MoveBy::create(0.8, Vec2(0, 6));
     coin->runAction(moveBy2);
 
     FrameSprite *collect = FrameSprite::create(icon_collect + 2, GetUint16(icon_collect));
     this->addChild(collect);
     collect->setPosition(32, 0);
-    // collect->setAutoSwitch(true);
+    collect->setAutoSwitch(true);
     MoveBy *moveBy3 = MoveBy::create(1.2, Vec2(-8, 0));
     collect->runAction(moveBy3);
 

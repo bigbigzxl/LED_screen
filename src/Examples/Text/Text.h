@@ -26,9 +26,10 @@ THE SOFTWARE.
 #define __Text_H__
 
 #include "Dot2D/dot2d.h"
-// float Voltage;
 
 NS_DT_BEGIN
+
+class TextLayer;
 
 class Text : public Scene
 {
@@ -42,32 +43,24 @@ public:
 
 class TextLayer : public Layer
 {
-protected:
-    struct Animate
-    {
-        int16_t offset;
-        float interval;
-        float dInterval;
-    };
-
-    float showInterval = 0.0f;
-
-    Animate *animateList = nullptr;
-
-    uint8_t animateCount = 0;
-
 public:
     virtual ~TextLayer();
 
 protected:
-    CanvasSprite *canvasSprite = nullptr;
+    CanvasSprite *m_str_sprite = nullptr;
 
 public:
     STATIC_CREATE(TextLayer);
 
     virtual bool initLayer();
 
+    void draw_cmd(void);
+
     void update(float dt) override;
+
+    static int32_t screen_H;
+    static int32_t screen_W;
+    static int32_t screen_char_num;
 };
 
 NS_DT_END
