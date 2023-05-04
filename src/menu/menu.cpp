@@ -14,13 +14,19 @@ void Menu::tick(bool entered)
   {
   case POWEROFF: // IDLE statue
   {
-    if (_lastState == POWEROFF)
+    if (_power_state) // poweron 
+    {
+      _newState(POWERON, now);
+    }
+
+    if (_lastState == POWEROFF )
     {
       Serial.println("power off, state epoll.");
       vTaskDelay(300 / portTICK_PERIOD_MS);
     }
     else
-    {
+    { /* shutdown. */
+
       // save configs
 
       // send power off IR
@@ -28,19 +34,25 @@ void Menu::tick(bool entered)
       // close the screen.
 
       _newState(POWEROFF, now);
+
     }
     break;
   }
 
   case POWERON:
   {
+    if (!_power_state) // poweroff 
+    {
+      _newState(POWEROFF, now);
+    }
+
     if (_lastState == POWEROFF)
     {
       // boot: attach boot function from main;
       callback_boot();
       _newState(POWERON, now);
     }
-    elif (_lastState == POWERON)
+    else if (_lastState == POWERON)
     {
       if (waitTime > LOADING_TIME)
       {

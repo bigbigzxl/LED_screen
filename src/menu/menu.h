@@ -23,6 +23,20 @@ public:
         UNKNOW = 99
     };
 
+    // define FiniteStateMachine
+    enum StateMachine : int
+    {
+        POWEROFF = 0,
+        POWERON,
+        HOME,
+        MENU,
+        CMD,
+        EXE,
+        DIY,
+        GAME,
+        UNKNOW
+    };
+
     // default constructor
     Menu() = default;
 
@@ -50,28 +64,14 @@ public:
     }
 
 private:
-    // define FiniteStateMachine
-    enum StateMachine : int
-    {
-        POWEROFF = 0,
-        POWERON,
-        HOME,
-        MENU,
-        CMD,
-        EXE,
-        DIY,
-        GAME,
-        UNKNOW
-    };
-
     /**
      *  Advance to a new state and save the last one to come back
      *  in cas of bouncing detection.
      */
     void _newState(StateMachine nextState);
 
-    StateMachine _state = HOME;
-    StateMachine _lastState = HOME; // used for timeout detect.
+    StateMachine _state = POWEROFF;
+    StateMachine _lastState = POWEROFF; // used for timeout detect.
 
     ButtonType _buttonState = IDLE;
     int32_t _delta = 0;
