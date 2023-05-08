@@ -69,6 +69,9 @@ void click()
 void doubleclick()
 {
   // director->runWithScene(dot2d::TripleClick::create());
+  menu.set_power_state(!menu.get_power_state()); // for test.
+  Serial.println("double clicked. %d", menu.get_power_state());
+
   menu.set_button_state(Menu::ButtonType::D_CLICK);
 }
 
