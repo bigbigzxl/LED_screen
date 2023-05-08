@@ -11,6 +11,14 @@
 
 #include <Arduino.h>
 
+// ----- Callback function types -----
+
+extern "C" {
+typedef void (*callbackFunction)(void);
+typedef void (*parameterizedCallbackFunction)(void *);
+}
+
+
 class Menu
 {
 public:
@@ -33,14 +41,14 @@ public:
         CMD,
         EXE,
         DIY,
-        GAME,
-        UNKNOW
+        GAME
     };
 
     // default constructor
     Menu() = default;
 
-    void tick(bool entered);
+    void tick(void);
+
     void set_button_state(ButtonType t)
     {
         _buttonState = t;
@@ -51,6 +59,25 @@ public:
         return _buttonState;
     }
 
+    StateMachine get_cur_state(void)
+    {
+        return _state;
+    }
+
+    bool get_power_state()
+    {
+        return _power_state;
+    }
+
+    void set_power_state(bool pw)
+    {
+        _power_state = pw;
+    }
+
+    void update_delta(int d)
+    {
+        _delta = _delta == 0 ? _delta + d : d;
+    }
     /**
      *  @brief Advance to a new state and
      *  save the last one to come back
@@ -63,6 +90,23 @@ public:
         _startTime = now;
     }
 
+    void attachBoot(callbackFunction newFunction)
+    {
+        _callback_boot = newFunction;
+    }
+    void attachHome(callbackFunction newFunction)
+    {
+        _callback_home = newFunction;
+    }
+    void attachSpinMenu(callbackFunction newFunction)
+    {
+        _callback_spin_menu = newFunction;
+    }
+    void attachSpinCmd(callbackFunction newFunction)
+    {
+        _callback_spin_cmd = newFunction;
+    }
+
 private:
     /**
      *  Advance to a new state and save the last one to come back
@@ -73,14 +117,20 @@ private:
     StateMachine _state = POWEROFF;
     StateMachine _lastState = POWEROFF; // used for timeout detect.
 
-    ButtonType _buttonState = IDLE;
-    int32_t _delta = 0;
+    volatile ButtonType _buttonState = IDLE;
+    volatile  int32_t _delta = 0;
 
-    bool _power_state = 0;         // 0 for power off; 1 for power on.
-    bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;
+    volatile  bool _power_state = 0;         // 0 for power off; 1 for power on.
+    volatile  bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;
 
     unsigned long _startTime = 0;      // start of current input change to checking timeout;
     unsigned long LOADING_TIME = 5000; // 5s
     unsigned long TIME_OUT = 15000;    // 15s
+
+    callbackFunction _callback_boot = NULL;
+    callbackFunction _callback_home = NULL;
+    callbackFunction _callback_spin_menu = NULL;
+    callbackFunction _callback_spin_cmd = NULL;
+
 };
 #endif

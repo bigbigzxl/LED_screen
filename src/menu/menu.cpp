@@ -1,19 +1,22 @@
 #include "menu.h"
 
-Menu::Menu()
-{
-}
-
-void Menu::tick(bool entered)
+void Menu::tick()
 {
   unsigned long now = millis(); // current (relative) time in msecs.
   unsigned long waitTime = (now - _startTime);
+
+  if (!_power_state) // poweroff 
+  {
+    _newState(POWEROFF, now);
+  }
 
   // Implementation of the state machine.
   switch (_state)
   {
   case POWEROFF: // IDLE statue
   {
+    Serial.println("power off");
+
     if (_power_state) // poweron 
     {
       _newState(POWERON, now);
@@ -26,6 +29,7 @@ void Menu::tick(bool entered)
     }
     else
     { /* shutdown. */
+    
 
       // save configs
 
@@ -41,66 +45,109 @@ void Menu::tick(bool entered)
 
   case POWERON:
   {
-    if (!_power_state) // poweroff 
-    {
-      _newState(POWEROFF, now);
-    }
+    Serial.println("power on");
 
     if (_lastState == POWEROFF)
     {
       // boot: attach boot function from main;
-      callback_boot();
+      _callback_boot();
       _newState(POWERON, now);
     }
     else if (_lastState == POWERON)
     {
       if (waitTime > LOADING_TIME)
       {
-        callback_home();
+        _callback_home();
         _newState(HOME, now);
       }
     }
 
     break;
   }
+
   case HOME:
   {
+    Serial.println("home");
+
     if (_lastState == POWERON || _lastState == HOME)
     {
       break;
     }
 
-    if (_lastState == DIY || _lastState == GAME)
+    if (_buttonState == L_CLICK)
     {
-      if (_buttonState == L_CLICK)
-      {
-        callback_home();
-        _newState(HOME, now);
-      }
-      break;
-    }
-    // state is not POWERON/HOME/DIY/GAME;
-    if (_buttonState == L_CLICK || waitTime > TIME_OUT)
-    {
-      callback_home();
+      _callback_home();
       _newState(HOME, now);
-    }
-    break;
-  }
-  case MENU:
-  {
-    if (_lastState == DIY)
-    {
-      // TODO: add logic.
+      _buttonState = IDLE;
       break;
     }
-
+    
+    // state is not POWERON/HOME/DIY/GAME;
+    if (!(_lastState == DIY || _lastState == GAME) && waitTime >= TIME_OUT)
+    {
+      _callback_home();
+      _newState(HOME, now);
+      break;
+    } 
     
     break;
   }
-  break;
+
+  case MENU:
+  {
+    Serial.println("menu");
+
+    if (_lastState == CMD && _buttonState == CLICK)
+    {
+      _newState(CMD, now);
+      _buttonState = IDLE;
+      break;
+    }
+
+    if (waitTime >= TIME_OUT || _buttonState == L_CLICK)
+    {
+      _newState(HOME, now);
+      _buttonState = IDLE;
+      break;
+    }    
+
+    if (_delta)
+    {
+      _callback_spin_menu();
+      break;
+    }
+
+    break;
   }
 
-default:
-  break;
+  case CMD:
+  {
+    Serial.println("cmd");
+
+    if (_lastState == MENU && _buttonState == CLICK)
+    {
+      _newState(CMD, now);
+      _buttonState = IDLE;
+      break;
+    }
+
+    if (_buttonState == L_CLICK || waitTime > TIME_OUT)
+    {
+       _newState(HOME, now);
+      _buttonState = IDLE;
+      break;
+    }
+
+    if (_delta)
+    {
+      _callback_spin_cmd();
+      break;
+    }
+    break;
+  }
+  
+  default:
+    break;
+  }
+
 }
