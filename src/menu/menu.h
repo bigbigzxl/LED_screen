@@ -76,7 +76,7 @@ public:
 
     void update_delta(int d)
     {
-        _delta = _delta == 0 ? _delta + d : d;
+        _delta = _delta == 0 ? d :  _delta + d;
     }
     /**
      *  @brief Advance to a new state and
@@ -125,11 +125,12 @@ private:
 
     unsigned long _startTime = 0;      // start of current input change to checking timeout;
     unsigned long LOADING_TIME = 5000; // 5s
-    unsigned long TIME_OUT = 15000;    // 15s
+    unsigned long TIME_OUT = 60000;    // 60s
 
     callbackFunction _callback_boot = NULL;
     callbackFunction _callback_home = NULL;
-    callbackFunction _callback_spin_menu = NULL;
+    callbackFunction 
+    _callback_spin_menu = NULL;
     callbackFunction _callback_spin_cmd = NULL;
 
 };

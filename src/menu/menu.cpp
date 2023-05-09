@@ -8,6 +8,7 @@ void Menu::tick()
   if (!_power_state) // poweroff 
   {
     _newState(POWEROFF, now);
+    return;
   }
 
   // Implementation of the state machine.
@@ -15,22 +16,25 @@ void Menu::tick()
   {
   case POWEROFF: // IDLE statue
   {
-    Serial.println("power off");
+    if (_lastState != POWEROFF) {Serial.println("POWEROFF");}
 
     if (_power_state) // poweron 
     {
       _newState(POWERON, now);
     }
 
-    if (_lastState == POWEROFF )
+    if (_lastState == POWEROFF)
     {
-      Serial.println("power off, state epoll.");
-      vTaskDelay(300 / portTICK_PERIOD_MS);
+      if (waitTime > 3000 )
+      {
+        Serial.println("power off, state epoll.");
+        _startTime = now;
+        // vTaskDelay(3000 / portTICK_PERIOD_MS);
+      }
     }
     else
     { /* shutdown. */
     
-
       // save configs
 
       // send power off IR
@@ -45,7 +49,7 @@ void Menu::tick()
 
   case POWERON:
   {
-    Serial.println("power on");
+    if (_lastState != POWERON) {Serial.println("POWERON");}
 
     if (_lastState == POWEROFF)
     {
@@ -67,12 +71,18 @@ void Menu::tick()
 
   case HOME:
   {
-    Serial.println("home");
+    if (_lastState != HOME) {Serial.println("HOME");}
 
-    if (_lastState == POWERON || _lastState == HOME)
-    {
-      break;
-    }
+    _newState(MENU, now);
+    break;
+
+
+    //TODO: add  home items, like setting, wifi, etc. 
+
+    // if (_lastState == POWERON || _lastState == HOME)
+    // {
+    //   break;
+    // }
 
     if (_buttonState == L_CLICK)
     {
@@ -95,9 +105,10 @@ void Menu::tick()
 
   case MENU:
   {
-    Serial.println("menu");
+    if (_lastState != MENU) {Serial.println("MENU");}
+    
 
-    if (_lastState == CMD && _buttonState == CLICK)
+    if (_buttonState == CLICK)
     {
       _newState(CMD, now);
       _buttonState = IDLE;
@@ -113,6 +124,7 @@ void Menu::tick()
 
     if (_delta)
     {
+      Serial.printf("%d", _delta);
       _callback_spin_menu();
       break;
     }
@@ -122,11 +134,11 @@ void Menu::tick()
 
   case CMD:
   {
-    Serial.println("cmd");
+   if (_lastState != CMD) {Serial.println("CMD");}
 
-    if (_lastState == MENU && _buttonState == CLICK)
+    if (_buttonState == CLICK)
     {
-      _newState(CMD, now);
+      _newState(MENU, now);
       _buttonState = IDLE;
       break;
     }
@@ -140,6 +152,7 @@ void Menu::tick()
 
     if (_delta)
     {
+      Serial.printf("%d", _delta);
       _callback_spin_cmd();
       break;
     }

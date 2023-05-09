@@ -25,8 +25,8 @@
 // #include <Arduino.h>
 // #include "Dot2D/dot2d.h"
 // #include "FastLED.h"
-// #include "Button.h"
-// #include "EC11.h"
+// #include "OneButton.h"
+
 // #include <math.h>
 // #include "Examples/Matrix/Matrix.h"
 // #include "Examples/TripleClick/TripleClick.h"
@@ -52,17 +52,17 @@
 // void Click();
 
 // OneButton button(PIN_INPUT, false, false);
-// ZXL::EC11 encoder;
+
 
 // dot2d::Director *director = nullptr;
 // extern float Voltage;
 
 // void click(void *btn)
 // {
-//   Button *button = (Button *)btn;
-//   dot2d::EventButton event(button->type(), dot2d::EventButton::ButtonEventCode::BEC_CLICK);
-//   auto dispatcher = dot2d::Director::getInstance()->getEventDispatcher();
-//   dispatcher->dispatchEvent(&event);
+// //   Button *button = (Button *)btn;
+// //   dot2d::EventButton event(button->type(), dot2d::EventButton::ButtonEventCode::BEC_CLICK);
+// //   auto dispatcher = dot2d::Director::getInstance()->getEventDispatcher();
+// //   dispatcher->dispatchEvent(&event);
 // }
 
 // // 必须要实现的dot2d导演对象代理方法
@@ -181,8 +181,11 @@
 // {
 //   vTaskDelay(10);
 //   button.tick();
-//   director->mainLoop();
+//    unsigned long start = millis(); // current (relative) time in msecs.
 
+//    director->mainLoop();
+//    unsigned long end = millis(); // current (relative) time in msecs.
+//     Serial.printf("%d \n", end-start);
 //   // ZXL::EC11Event e;
 //   // if (encoder.read(&e))
 //   // {

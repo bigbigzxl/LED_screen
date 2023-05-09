@@ -33,9 +33,9 @@ int16_t cmd_index = 0;
 
 NS_DT_BEGIN
 
-// int32_t MenuUiLayer::screen_H = 7;
-// int32_t MenuUiLayer::screen_W = 40;
-// int32_t MenuUiLayer::screen_char_num = 40 / 5;
+int32_t MenuUiLayer::screen_H = 7;
+int32_t MenuUiLayer::screen_W = 40;
+int32_t MenuUiLayer::screen_char_num = 40 / 5;
 
 bool MenuUi::init()
 {
@@ -52,69 +52,16 @@ MenuUiLayer::~MenuUiLayer()
 
 bool MenuUiLayer::initLayer()
 {
-
-    // canvasSprite = CanvasSprite::create(40, 7);
-    // this->addChild(canvasSprite);
-    
-
-    // auto listener = EventListenerButton::create();
-    // listener->onBtnClick = [&](int8_t keyCode, Event *event)
-    // {
-    //     // if (keyCode >= 0 && keyCode <= 3)
-    //     // {
-    //     //     d_controll = (Direction)keyCode;
-    //     // }
-
-    //     SpriteCanvas *canvas = canvasSprite->getSpriteCanvas();
-    //     canvas->canvasReset();
-
-    //     canvas->drawChar(0, 0, 'G', DTRGB(0, 100, 0), DTRGB(100, 100, 100), 1);
-    //     canvas->drawChar(5, 0, 'N', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    //     canvas->drawChar(10, 0, 'D', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    //     canvas->drawChar(15, 0, '=', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    //     canvas->drawChar(20, 0, '0', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    //     canvas->drawChar(25, 0, '.', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    //     canvas->drawChar(30, 0, '0', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    //     canvas->drawChar(35, 0, 'V', DTRGB(0, 100, 0), DTRGB(0, 100, 0), 1);
-    // };
-    // _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-
-    // CanvasSprite *sprite = CanvasSprite::create(40, 7);
-    // this->addChild(sprite, -2);
-    // sprite->getSpriteCanvas()->drawRect(1, 1, 6, 6, DTRGB(255, 0, 0));
-    // sprite->getSpriteCanvas()->fillScreen(DTRGB(255, 0, 0));
-
-    // auto fadeIn = FadeIn::create(1.0f);
-    // sprite->runAction(fadeIn);
-
-    // auto fadeOut = FadeOut::create(2.0f);
-    // sprite->runAction(fadeOut);
-    // MoveBy *move1 = MoveBy::create(2, Vec2(24, 0));
-    // MoveBy *move2 = MoveBy::create(2, Vec2(-24, 0));
-    // Sequence *seq = Sequence::createWithTwoActions(move1, move2);
-    // RepeatForever *rep = RepeatForever::create(seq);
-    // sprite->runAction(rep);
-    // Size(32, 5), Size(32, 5),
-
-    // MenuUiSprite *timeMenuUi = MenuUiSprite::create("0123456789", MenuUiSprite::MenuUiAlign::MenuUiAlignCenter, &TomThumb, 1);
-    // timeMenuUi->setTransparent(true);
-    // timeMenuUi->setPosition(0, 1);
-    // this->addChild(timeMenuUi);
-
-    // // sprite->getSpriteCanvas()->drawRect(1, 1, 6, 6, DTRGB(255, 0, 0));
-    // MoveBy *move1 = MoveBy::create(2, Vec2(24, 0));
-    // MoveBy *move2 = MoveBy::create(2, Vec2(-24, 0));
-    // Sequence *seq = Sequence::createWithTwoActions(move1, move2);
-    // RepeatForever *rep = RepeatForever::create(seq);
-    
-    // sprite->runAction(rep);
-    m_str_sprite = CanvasSprite::create(40, 7);//MenuUiSprite::create(Size(40,7), "0123456789",MenuUiSprite::MenuUiAlign::MenuUiAlignCenter, &TomThumb, 1);
     draw_cmd();
+
+    auto fadeIn = FadeIn::create(1.0f);
+    m_str_sprite->runAction(fadeIn);
+
     // timeMenuUi->setTransparent(true);
-    m_str_sprite->setPosition(-40, 0);
-    this->addChild(m_str_sprite);
-    MoveBy *move1 = MoveBy::create(0.2, Vec2(40, 0));
-    m_str_sprite->runAction(move1);
+    // m_str_sprite->setPosition(-40, 0);
+    // this->addChild(m_str_sprite);
+    // MoveBy *move1 = MoveBy::create(0.2, Vec2(40, 0));
+    // m_str_sprite->runAction(move1);
     // this->scheduleUpdate();
     return true;
 }

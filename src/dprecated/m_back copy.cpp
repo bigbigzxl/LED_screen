@@ -113,22 +113,22 @@
 
 //     uint32_t dotOrder(uint16_t x, uint16_t y)
 //     {
-//         int8_t mask_x = 9;
-//         int8_t mask_y = 5;
-//         int8_t offset = 0;
+//         // int8_t mask_x = 9;
+//         // int8_t mask_y = 5;
+//         // int8_t offset = 0;
 
-//         if (x > mask_x)
-//         {
-//             offset = -1;
-//         }
-//         else if (x >= 5 && y > 5)
-//         {
-//             offset = -1;
-//         }
+//         // if (x > mask_x)
+//         // {
+//         //     offset = -1;
+//         // }
+//         // else if (x >= 5 && y > 5)
+//         // {
+//         //     offset = -1;
+//         // }
 
 //         uint16_t factor = floor(x / 5);
 
-//         uint32_t order = y * 5 + x % 5 + factor * 35 + offset;
+//         uint32_t order = y * 5 + x % 5 + factor * 35 ;//+ offset;
 
 //         // Serial.printf("-----order=%d-----\n", order);
 
@@ -172,9 +172,6 @@
 // void loop()
 // {
 //     vTaskDelay(10);
-//     for (int8_t i = 0; i < BASE_BTN_COUNT; i++)
-//     {
-//         buttons[i]->tick();
-//     }
+
 //     director->mainLoop();
 // }
