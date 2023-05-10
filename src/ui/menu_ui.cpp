@@ -25,9 +25,10 @@ THE SOFTWARE.
 
 #include "../Dot2D/dtSprite.h"
 #include "../Dot2D/third/gfxfont.h"
-#include "menu/cmd.h"
 #include "menu_ui.h"
 
+
+#include "menu/cmd.h"
 float Voltage = 0.0;
 int16_t cmd_index = 0;
 
@@ -75,7 +76,7 @@ void MenuUiLayer::draw_cmd(void)
     char frac = 48 + (int8_t)(Voltage * 10) % 10;
     for (uint8_t x = 0; x < screen_char_num; ++x)
     {
-        canvas->drawChar(x*5, 0, cmd[cmd_index*screen_char_num + x],  DTRGB(100, 100, 0), DTRGB(100, 100, 100), 1);
+        canvas->drawChar(x*5, 0, boot[cmd_index*screen_char_num + x],  DTRGB(100, 100, 0), DTRGB(100, 100, 100), 1);
     }
     // canvas->drawChar(0, 0, 'V', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
     // canvas->drawChar(5, 0, 'C', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);

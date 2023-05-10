@@ -71,10 +71,10 @@ void Menu::tick()
 
   case HOME:
   {
-    if (_lastState != HOME) {Serial.println("HOME");}
+    // if (_lastState != HOME) {Serial.println("HOME");}
 
-    _newState(MENU, now);
-    break;
+    // _newState(MENU, now);
+    // break;
 
 
     //TODO: add  home items, like setting, wifi, etc. 
