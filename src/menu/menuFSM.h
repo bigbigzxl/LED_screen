@@ -123,15 +123,18 @@ private:
     volatile  bool _power_state = 0;         // 0 for power off; 1 for power on.
     volatile  bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;
 
-    unsigned long _startTime = 0;      // start of current input change to checking timeout;
-    unsigned long LOADING_TIME = 5000; // 5s
-    unsigned long TIME_OUT = 60000;    // 60s
 
-    callbackFunction _callback_boot = NULL;
-    callbackFunction _callback_home = NULL;
-    callbackFunction 
-    _callback_spin_menu = NULL;
-    callbackFunction _callback_spin_cmd = NULL;
+    bool mute = false;
+    unsigned char cur_vol = 50;
+
+    unsigned long _startTime   = 0;      // start of current input change to checking timeout;
+    unsigned long LOADING_TIME = 5000; // 5s
+    unsigned long TIME_OUT     = 60000;    // 60s
+
+    callbackFunction _callback_boot      = NULL;
+    callbackFunction _callback_home      = NULL;
+    callbackFunction _callback_spin_menu = NULL;
+    callbackFunction _callback_spin_cmd  = NULL;
 
 };
 #endif

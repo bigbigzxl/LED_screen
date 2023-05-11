@@ -2,67 +2,163 @@
 
 #ifndef CMD_H
 #define CMD_H
-#include <vector>
-#include <string>
-#include <map>
 
-#define CMD_NUM 20
+#include <string.h>
 
-std::vector<std::string> boot;
-std::map<std::string, std::vector<std::string> > cmd;
+// cmd["INPT"] = {"AES", "COS", "USB", "I2S", "BLT"};
+// cmd["VOL"]  =
+// cmd["PHAS"] = ;
+// cmd["PLL"]  =; 
+// cmd[] = ;
+// cmd[] = ;
+// cmd[] = ;
+// cmd[]  = ;
+// cmd[] = ;
+// cmd[] = ; 
+// cmd[]   = ;
+// cmd[]   = ;
+// cmd[]  = ;
 
-boot.append(" HIBIK*");
-boot.append(" HIBIK+");
-
-cmd["INPT"] = {"AES", "COS", "USB", "I2S", "BLT"};
-cmd["VOL"]  = {"000"}; // 0~200 uint8
-cmd["PHAS"] = {"0", "180"};
-cmd["PLL"]  = {"FAST", "ACCU"}; 
-cmd["SYNC"] = {"INT", "EXT"};
-cmd["OUPT"] = {"HPA", "PRE"};
-cmd["AMPL"] = {"LO", "MI", "HI"};
-cmd["TNT"]  = {"OFF", "ON"};
-cmd["DSPL"] = {"CLR", "R00", "G00", "B00"};
-cmd["ADIM"] = {"5S", "10S", "OFF"}; 
-cmd["FW"]   = {"S001"};
-cmd["SN"]   = {"S0xxx"};
-cmd["DAT"]  = {"2209"};
 
 // Standard cmd.
-static const unsigned char boot[] = {
-" ", "H", "I", "B", "I", "K", "I", "*",
-" ", "H", "I", "B", "I", "K", "I", "+",
+const char* boot[] = {
+                " HIBIK*",
+                " HIBIK+"
+};
+
+const char* menu[] = {
+    "VOL  ",
+    "DSPL ",
+    "INPT ", 
+    "PHAS ",
+    "PLL ",
+
+    "SYNC ",
+    "OUPT ",
+    "AMPL  ",
+    "TNT  ",
+    "ADIM ",
+
+    "FW  ",
+    "SN ",
+    "DAT "   
+};
+
+const int32_t cmd_pos[] = {
+    0,
+    1,
+    5,
+    10,
+    12,
+
+    14,
+    16,
+    18,
+    21,
+    23,
+
+    26,
+    27,
+    28
+}; 
+const char* cmd_items[] = {
+    "000", // 0~200 uint8
+    "CLR", "R00", "G00", "B00",
+    "AES", "COS", "USB", "I2S", "BLT",
+    "  0", "180",
+    "FAST", "ACCU",
+    
+    "INT", "EXT",
+    "HPA", "PRE",
+    "LO", "MI", "HI",
+    "OFF", " ON",
+    " 5S", "10S", "OFF",
+
+    "S001",
+    "S0xxx",
+    "2209"
 };
 
 
-static const unsigned char cmd_keys[CMD_NUM][4] = {
-{"I", "N", "P", "T"},
-{"V", "O", "L",  ""},
-{"P", "H", "A", "S"},
-{"P", "L", "L",  ""},
-{"S", "Y", "N", "C"},
-{"O", "U", "P", "T"},
-{"A", "M", "P", "L"},
-{"T", "N", "T",  ""},
-{"D", "S", "P", "L"},
-{"A", "D", "I", "M"},
-{"F", "W",  "",  ""},
-{"S", "N",  "",  ""},
-{"D", "A", "T",  ""}
-};
+float Voltage = 0.0;
+int16_t cur_cmd_index = 0;
+int32_t all_cmd_num = sizeof(cmd_pos) / sizeof(cmd_pos[0]);
+// volatile char* cur_text = (char*)"12345678";
+unsigned char cur_text[9];
+char* cur_cmd_values[] = {
+    (char*)"000", // 0~200 uint8
+    (char*)"CLR", 
+    (char*)"AES",
+    (char*)"  0",
+    (char*)"FAST", 
+    
+    (char*)"INT", 
+    (char*)"HPA", 
+    (char*)"LO", 
+    (char*)"OFF",
+    (char*)" 5S", 
+    
+    (char*)"S001",
+    (char*)"S0xxx",
+    (char*)"2209"
+}; 
 
-// static const unsigned char cmd_values[CMD_NUM][4] = {
-// {
-// // {"A", "E", "S", ""},
-// // {"C", "O", "S", ""},
-// // {"U", "S", "B", ""},
-// // {"I", "2", "S", ""},
-// // {"B", "L", "T", ""}
-// }
-// };
+void update_cmd_str(void)
+{   
+    // Serial.printf("strlen start.");
+    int16_t menu_len = strlen(menu[cur_cmd_index]);
+    int16_t cmd_len = strlen(cur_cmd_values[cur_cmd_index]);
+    // Serial.printf("strlen done.");
+    if (menu_len + cmd_len != 8)
+    {
+        Serial.printf("cmd length error!!!%s, %s, %d", menu_len, cmd_len, cmd_len);
+        return;
+    }
+    
+    
+    // cur_text[0] += 1; 
 
-// static const unsigned chat cmd_code[CMD_NUM][4] = {
+    // char tmp[9];
+    for (int i = 0; i < menu_len; i++)
+    {
+        cur_text[i] = *(menu[cur_cmd_index] + i);
+    }
 
-// };
+    for (int i = 0; i < cmd_len; i++)
+    {
+        cur_text[menu_len + i] = *(cur_cmd_values[cur_cmd_index] + i);
+    }
+    // tmp[8] = 0;
 
+    // cur_text = tmp;
+    Serial.printf("%s\n", cur_text);
+
+    // strcpy(cur_text, menu[cur_cmd_index]);
+    // strcat(cur_text, cur_cmd_values[cur_cmd_index]);
+}
+
+void show_8char(unsigned char * s)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        cur_text[i] = *(s + i);
+    }
+}
+void show_voice_volume(unsigned char vol)
+{   
+    // Vol: 0~200
+    vol = vol < 0 ? 0 : vol;
+    vol = vol > 200 ? 200 : vol;
+
+    unsigned char unit    = 48 + vol / 1 % 10;
+    unsigned char ten     = 48 + vol / 10 % 10;
+    unsigned char hundred = 48 + vol / 100 % 10;
+   
+    unsigned char tmp[9] = {'V','O','L',' ',' ',' ',' ',' ', 0};
+    if (hundred > 48) {tmp[5] = hundred;}
+    if (ten     > 48) {tmp[6] = ten;}
+    if (unit    > 48) {tmp[7] = unit;}
+
+    show_8char(tmp);
+}
 #endif // FONT5X7_H

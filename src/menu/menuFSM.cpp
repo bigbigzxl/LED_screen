@@ -1,4 +1,5 @@
-#include "menu.h"
+#include "menuFSM.h"
+#include "menu/cmd.h"
 
 void Menu::tick()
 {
@@ -55,16 +56,16 @@ void Menu::tick()
     {
       // boot: attach boot function from main;
       _callback_boot();
-      _newState(POWERON, now);
+      _newState(HOME, now);
     }
-    else if (_lastState == POWERON)
-    {
-      if (waitTime > LOADING_TIME)
-      {
-        _callback_home();
-        _newState(HOME, now);
-      }
-    }
+    // else if (_lastState == POWERON)
+    // {
+    //   if (waitTime > LOADING_TIME)
+    //   {
+    //     _callback_home();
+    //     _newState(HOME, now);
+    //   }
+    // }
 
     break;
   }
@@ -72,10 +73,12 @@ void Menu::tick()
   case HOME:
   {
     // if (_lastState != HOME) {Serial.println("HOME");}
+    
+    // get info from FPGA;
+    // get_info_from_FPGA();
 
-    // _newState(MENU, now);
-    // break;
-
+    //show info
+    
 
     //TODO: add  home items, like setting, wifi, etc. 
 
@@ -83,6 +86,30 @@ void Menu::tick()
     // {
     //   break;
     // }
+
+    // mute
+    if (_buttonState == CLICK)
+    {
+      if (mute)
+      {
+        show_voice_volume(cur_vol);
+        mute = false;
+      }
+      else
+      {
+        show_voice_volume(0);
+      }
+    }
+
+    if (_delta)
+    {
+      // Serial.printf("%d", _delta);
+      cur_vol += _delta;
+      _delta = 0;
+      show_voice_volume(cur_vol);
+      // _callback_spin_menu();
+      break;
+    }
 
     if (_buttonState == L_CLICK)
     {

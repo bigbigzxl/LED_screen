@@ -55,7 +55,7 @@ public:
 
     virtual bool initLayer();
 
-    void draw_cmd(void);
+    void draw_menu_str(unsigned char* s,  DTRGB color,  DTRGB bg);
     
 
     void update(float dt) override;

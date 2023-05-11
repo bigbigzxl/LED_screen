@@ -22,15 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 #include <Arduino.h>
-
 #include "../Dot2D/dtSprite.h"
 #include "../Dot2D/third/gfxfont.h"
 #include "menu_ui.h"
 
-
-#include "menu/cmd.h"
-float Voltage = 0.0;
-int16_t cmd_index = 0;
+extern unsigned char cur_text[9];
 
 NS_DT_BEGIN
 
@@ -51,47 +47,50 @@ MenuUiLayer::~MenuUiLayer()
 {
 }
 
+void MenuUiLayer::draw_menu_str(unsigned char s[] , DTRGB color = DTRGB(100, 100, 0), DTRGB bg = DTRGB(100, 100, 0))
+{
+
+    // Serial.printf("%s\n", cur_text);
+    // SpriteCanvas *canvas = m_str_sprite->getSpriteCanvas();
+    m_canvas->canvasReset();
+
+    for (uint8_t x = 0; x < screen_char_num; ++x)
+    {
+        m_canvas->drawChar(x*5, 0, cur_text[x],  color, bg, 1);
+    }
+}
+
 bool MenuUiLayer::initLayer()
 {
-    draw_cmd();
 
-    auto fadeIn = FadeIn::create(1.0f);
-    m_str_sprite->runAction(fadeIn);
+    m_str_sprite = CanvasSprite::create(MenuUiLayer::screen_W, MenuUiLayer::screen_H);
+    this->addChild(m_str_sprite);
+    
+    m_canvas = m_str_sprite->getSpriteCanvas();
+    // draw_menu_str((unsigned char*)"AES P441");
+    draw_menu_str(cur_text);
 
-    // timeMenuUi->setTransparent(true);
     // m_str_sprite->setPosition(-40, 0);
-    // this->addChild(m_str_sprite);
     // MoveBy *move1 = MoveBy::create(0.2, Vec2(40, 0));
     // m_str_sprite->runAction(move1);
+
+    // auto fadeIn = FadeIn::create(1.0f);
+    // m_str_sprite->runAction(fadeIn);
+
+    // timeMenuUi->setTransparent(true);
+    m_str_sprite->setPosition(-40, 0);
+    // this->addChild(m_str_sprite);
+    MoveBy *move1 = MoveBy::create(2, Vec2(40, 0)); // 0.2
+    m_str_sprite->runAction(move1);
+
     // this->scheduleUpdate();
     return true;
 }
 
-void MenuUiLayer::draw_cmd(void)
-{
-    SpriteCanvas *canvas = m_str_sprite->getSpriteCanvas();
-    canvas->canvasReset();
-
-    char ten = 48 + (int8_t)Voltage;
-    char frac = 48 + (int8_t)(Voltage * 10) % 10;
-    for (uint8_t x = 0; x < screen_char_num; ++x)
-    {
-        canvas->drawChar(x*5, 0, boot[cmd_index*screen_char_num + x],  DTRGB(100, 100, 0), DTRGB(100, 100, 100), 1);
-    }
-    // canvas->drawChar(0, 0, 'V', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-    // canvas->drawChar(5, 0, 'C', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-    // canvas->drawChar(10, 0, 'C', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-    // canvas->drawChar(15, 0, '=', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-
-    // canvas->drawChar(20, 0, ten, DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-    // canvas->drawChar(25, 0, '.', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-    // canvas->drawChar(30, 0, frac, DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-    // canvas->drawChar(35, 0, 'V', DTRGB(100, 100, 0), DTRGB(0, 100, 0), 1);
-}
 void MenuUiLayer::update(float dt)
 {
-
-    draw_cmd();
+    draw_menu_str(cur_text);
+    
 
     // m_str_sprite =  MenuUiSprite::create(Size(40,7), "0123456789", MenuUiSprite::MenuUiAlign::MenuUiAlignLeft, nullptr, 1);
 
