@@ -36,18 +36,22 @@ int32_t MenuUiLayer::screen_char_num = 40 / 5;
 
 bool MenuUi::init()
 {
-    MenuUiLayer* rootLayer = MenuUiLayer::create();
+    // MenuUiLayer* rootLayer = MenuUiLayer::create();
+    rootLayer = MenuUiLayer::create();
     rootLayer->setContentSize(Size(MenuUiLayer::screen_W, MenuUiLayer::screen_H));
     this->addChild(rootLayer);
     rootLayer->initLayer();
     return true;
 }
-
+MenuUiLayer* MenuUi::getLayer()
+{
+    return rootLayer;
+}
 MenuUiLayer::~MenuUiLayer()
 {
 }
 
-void MenuUiLayer::draw_menu_str(unsigned char s[] , DTRGB color = DTRGB(100, 100, 0), DTRGB bg = DTRGB(100, 100, 0))
+void MenuUiLayer::update_8char(unsigned char s[] , DTRGB color = DTRGB(100, 100, 0), DTRGB bg = DTRGB(100, 100, 0))
 {
 
     // Serial.printf("%s\n", cur_text);
@@ -65,10 +69,11 @@ bool MenuUiLayer::initLayer()
 
     m_str_sprite = CanvasSprite::create(MenuUiLayer::screen_W, MenuUiLayer::screen_H);
     this->addChild(m_str_sprite);
-    
     m_canvas = m_str_sprite->getSpriteCanvas();
-    // draw_menu_str((unsigned char*)"AES P441");
-    draw_menu_str(cur_text);
+    // update_8char((unsigned char*)"boot....");
+    // 
+    update_8char((unsigned char*)"AES P441");
+    // update_8char(cur_text);
 
     // m_str_sprite->setPosition(-40, 0);
     // MoveBy *move1 = MoveBy::create(0.2, Vec2(40, 0));
@@ -79,17 +84,44 @@ bool MenuUiLayer::initLayer()
 
     // timeMenuUi->setTransparent(true);
     m_str_sprite->setPosition(-40, 0);
-    // this->addChild(m_str_sprite);
     MoveBy *move1 = MoveBy::create(2, Vec2(40, 0)); // 0.2
     m_str_sprite->runAction(move1);
 
     // this->scheduleUpdate();
     return true;
 }
+void MenuUiLayer::show_logo()
+{   
+    update_8char((unsigned char*)" HIBIKI ");
+    m_str_sprite->setPosition(-40, 0);
+    MoveBy *move1 = MoveBy::create(2, Vec2(40, 0)); // 0.2
+    m_str_sprite->runAction(move1);
 
+    // unsigned char logo[] = {' ', 'H', 'I', 'B', 'I', 'K', 'I', ''};
+    int8_t prset_pos_x[] = {39, 40, 39, 40};
+    int8_t prset_pos_y[] = {7, 8, 7, 8};
+    int32_t cur_pos = 0;
+    unsigned long start = millis(); // current (relative) time in msecs.
+    while (true)
+    {
+        unsigned long now = millis(); // current (relative) time in msecs.
+        if (now - start > 250)
+        {
+            update_8char((unsigned char*)" HIBIKI ");
+            m_canvas->drawPixel(prset_pos_x[cur_pos], prset_pos_y[cur_pos], DTRGB(0, 100, 0));
+            cur_pos++;
+            cur_pos %= 4;
+            start = now;
+        }
+    }
+    
+    
+
+}
 void MenuUiLayer::update(float dt)
 {
-    draw_menu_str(cur_text);
+    update_8char(cur_text);
+
     
 
     // m_str_sprite =  MenuUiSprite::create(Size(40,7), "0123456789", MenuUiSprite::MenuUiAlign::MenuUiAlignLeft, nullptr, 1);

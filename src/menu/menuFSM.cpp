@@ -87,74 +87,101 @@ void Menu::tick()
     //   break;
     // }
 
+   if (_lastState == HOME)
+    {
+      if (waitTime > 3000 )
+      {
+        // Serial.println("power off, state epoll.");
+        _callback_home();
+        _startTime = now;
+      }
+    }
+
     // mute
     if (_buttonState == CLICK)
     {
       if (mute)
       {
-        show_voice_volume(cur_vol);
+        set_voice_volume(cur_vol);
         mute = false;
       }
       else
       {
-        show_voice_volume(0);
+        set_voice_volume(0);
       }
+
+      _buttonState = IDLE;
     }
 
     if (_delta)
     {
-      // Serial.printf("%d", _delta);
+      // Vol: 0~200
       cur_vol += _delta;
+      cur_vol = cur_vol < 0 ? 0 : cur_vol;
+      cur_vol = cur_vol > 200 ? 200 : cur_vol;
       _delta = 0;
       show_voice_volume(cur_vol);
+
+      // Serial.printf("%s\n", cur_text);
+      // Serial.printf("%d", cur_vol);
       // _callback_spin_menu();
       break;
     }
 
-    if (_buttonState == L_CLICK)
+
+    if (_buttonState == D_CLICK)
     {
-      _callback_home();
-      _newState(HOME, now);
+      _callback_spin_menu();
+      _newState(MENU, now);
+
       _buttonState = IDLE;
       break;
     }
+    // if (_buttonState == L_CLICK)
+    // {
+    //   _callback_home();
+    //   _newState(HOME, now);
+    //   _buttonState = IDLE;
+    //   break;
+    // }
     
     // state is not POWERON/HOME/DIY/GAME;
-    if (!(_lastState == DIY || _lastState == GAME) && waitTime >= TIME_OUT)
-    {
-      _callback_home();
-      _newState(HOME, now);
-      break;
-    } 
+    // if (!(_lastState == DIY || _lastState == GAME) && waitTime >= TIME_OUT)
+    // {
+    //   _callback_home();
+    //   _newState(HOME, now);
+    //   break;
+    // } 
     
     break;
   }
 
   case MENU:
   {
-    if (_lastState != MENU) {Serial.println("MENU");}
+    // if (_lastState != MENU) {Serial.println("MENU");}
     
-
-    if (_buttonState == CLICK)
+    if (_buttonState == D_CLICK)
     {
       _newState(CMD, now);
       _buttonState = IDLE;
       break;
     }
 
+    if (_delta || _lastState != MENU)
+    {
+      cur_cmd_index += _delta;
+      _delta = 0;
+      _callback_spin_menu();
+      break;
+    }
+
     if (waitTime >= TIME_OUT || _buttonState == L_CLICK)
     {
+      _callback_home();
       _newState(HOME, now);
       _buttonState = IDLE;
       break;
     }    
-
-    if (_delta)
-    {
-      Serial.printf("%d", _delta);
-      _callback_spin_menu();
-      break;
-    }
 
     break;
   }

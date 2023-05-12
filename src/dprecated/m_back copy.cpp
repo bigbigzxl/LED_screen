@@ -51,7 +51,7 @@
 // {
 //     Button *button = (Button *)btn;
 //     dot2d::EventButton event(button->type(), dot2d::EventButton::ButtonEventCode::BEC_CLICK);
-//     auto dispatcher = dot2d::Director::getInstance()->getEventDispatcher();
+    // auto dispatcher = dot2d::Director::getInstance()->getEventDispatcher();
 //     dispatcher->dispatchEvent(&event);
 // }
 

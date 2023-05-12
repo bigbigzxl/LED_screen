@@ -14,6 +14,7 @@
 
 #include "menu/menuFSM.h"
 #include "ui/menu_ui.h"
+#include "menu/cmd.h"
 
 // EC11 config
 #define EC11_A_PIN 25
@@ -33,14 +34,14 @@
 int32_t lastEncoderValue = 0;
 int32_t delta = 0;
 
-extern float Voltage;
-extern int16_t cur_cmd_index;
-extern int32_t all_cmd_num;
-extern char* cur_cmd_values[];
-extern const char* menu[];
-extern const int32_t cmd_pos[];
-extern const char* cmd_items[];
-extern unsigned char cur_text[9];
+// extern float Voltage;
+// extern int16_t cur_cmd_index;
+// extern int32_t all_cmd_num;
+// extern char* cur_cmd_values[];
+// extern const char* menu[];
+// extern const int32_t cmd_pos[];
+// extern const char* cmd_items[];
+// extern unsigned char cur_text[9];
 
 ESP32Encoder spin(false); // true interrupt.
 OneButton spin_key(EC11_K_PIN, false, false);
@@ -50,6 +51,7 @@ Menu menuFSM;
 dot2d::Director *director = nullptr;
 
 void update_cmd_str(void);
+void show_voice_volume(unsigned char vol);
 
 void click(void);
 void doubleclick(void);
@@ -96,18 +98,35 @@ void callback_boot()
 {
     // director->runWithScene(dot2d::MenuUi::create()); // power on LOGO render.
     Serial.println("render boot");
+    dot2d::MenuUi* s =  (dot2d::MenuUi*)director->getRunningScene();
+    s->getLayer()->show_logo();
+    
 }
 
 void callback_home()
 {
+    // get FPGA infput info.
+    // unsigned char * input = get_input_from_FPGA();
+    show_8char((unsigned char *)"AES P441");
     // director->runWithScene(dot2d::Matrix::create()); // power on LOGO render.
-    Serial.println("render home");
+    // Serial.println("render home");
 }
 
 void callback_spin_menu()
-{
+{        
+
+    // Serial.printf("cmd_index = %d \n", cur_cmd_index);
+    if (cur_cmd_index < 0)
+    {
+        cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
+    }
+    else
+    {
+        cur_cmd_index %= all_cmd_num;
+    }
+    update_cmd_str();
     // director->runWithScene(dot2d::Matrix::create()); // power on LOGO render.
-    Serial.println("rend menu");
+    // Serial.println("rend menu");
 }
 
 void callback_spin_cmd()
@@ -180,13 +199,15 @@ void setup()
     menuFSM.attachSpinMenu(callback_spin_menu);
     menuFSM.attachSpinCmd(callback_spin_cmd);
 
+
+    // show_voice_volume(100); // test
+
     // init engine and init  canvas.
     director = dot2d::Director::getInstance();            // get director object.
     director->setDelegate(new MainDelegate());            // set director delegate.
     director->setFramesPerSecond(30);                     // set FPS.
     director->initDotCanvas(MATRIX_WIDTH, MATRIX_HEIGHT); // init director canvas.
     director->runWithScene(dot2d::MenuUi::create());
-
     Serial.println("#############setup done.##################\n");
 }
 
@@ -200,21 +221,9 @@ void loop()
         lastEncoderValue = now_count;
         menuFSM.update_delta(delta);
         // Serial.printf("delta = %d \n", delta);
-        // cur_cmd_index += delta;
-         
-        // if (cur_cmd_index < 0)
-        // {
-        //     cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
-        // }
-        // else
-        // {
-        //     cur_cmd_index %= all_cmd_num;
-        // }
-        // Serial.printf("cmd_index = %d \n", cur_cmd_index);
 
-        // update_cmd_str();
     }
-    // menuFSM.tick();
+    menuFSM.tick();
 
     // unsigned long start = millis(); // current (relative) time in msecs.
     director->mainLoop();
