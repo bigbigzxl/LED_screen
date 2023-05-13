@@ -38,8 +38,6 @@ protected:
     bool init() override;
 
 public:
-    MenuUiLayer* rootLayer = nullptr;
-    MenuUiLayer* getLayer();
     STATIC_CREATE(MenuUi);
 };
 
@@ -58,7 +56,7 @@ public:
     virtual bool initLayer();
 
     void update_8char(unsigned char* s,  DTRGB color,  DTRGB bg);
-    void show_logo();
+
 
     void update(float dt) override;
 

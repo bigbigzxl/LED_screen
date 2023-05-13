@@ -36,17 +36,17 @@ int32_t MenuUiLayer::screen_char_num = 40 / 5;
 
 bool MenuUi::init()
 {
-    // MenuUiLayer* rootLayer = MenuUiLayer::create();
-    rootLayer = MenuUiLayer::create();
+    MenuUiLayer* rootLayer = MenuUiLayer::create();
+    // rootLayer = MenuUiLayer::create();
     rootLayer->setContentSize(Size(MenuUiLayer::screen_W, MenuUiLayer::screen_H));
     this->addChild(rootLayer);
     rootLayer->initLayer();
     return true;
 }
-MenuUiLayer* MenuUi::getLayer()
-{
-    return rootLayer;
-}
+// MenuUiLayer* MenuUi::getLayer()
+// {
+//     return rootLayer;
+// }
 MenuUiLayer::~MenuUiLayer()
 {
 }
@@ -90,34 +90,7 @@ bool MenuUiLayer::initLayer()
     // this->scheduleUpdate();
     return true;
 }
-void MenuUiLayer::show_logo()
-{   
-    update_8char((unsigned char*)" HIBIKI ");
-    m_str_sprite->setPosition(-40, 0);
-    MoveBy *move1 = MoveBy::create(2, Vec2(40, 0)); // 0.2
-    m_str_sprite->runAction(move1);
 
-    // unsigned char logo[] = {' ', 'H', 'I', 'B', 'I', 'K', 'I', ''};
-    int8_t prset_pos_x[] = {39, 40, 39, 40};
-    int8_t prset_pos_y[] = {7, 8, 7, 8};
-    int32_t cur_pos = 0;
-    unsigned long start = millis(); // current (relative) time in msecs.
-    while (true)
-    {
-        unsigned long now = millis(); // current (relative) time in msecs.
-        if (now - start > 250)
-        {
-            update_8char((unsigned char*)" HIBIKI ");
-            m_canvas->drawPixel(prset_pos_x[cur_pos], prset_pos_y[cur_pos], DTRGB(0, 100, 0));
-            cur_pos++;
-            cur_pos %= 4;
-            start = now;
-        }
-    }
-    
-    
-
-}
 void MenuUiLayer::update(float dt)
 {
     update_8char(cur_text);
