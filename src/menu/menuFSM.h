@@ -10,7 +10,8 @@
 #define MENU_H
 
 #include <Arduino.h>
-
+#include "menu/cmd.h"
+#include "display/display.h"
 // ----- Callback function types -----
 
 extern "C" {
@@ -43,6 +44,8 @@ public:
         DIY,
         GAME
     };
+
+    static Menu* getInstance();
 
     // default constructor
     Menu() = default;
@@ -90,22 +93,14 @@ public:
         _startTime = now;
     }
 
-    void attachBoot(callbackFunction newFunction)
-    {
-        _callback_boot = newFunction;
-    }
-    void attachHome(callbackFunction newFunction)
-    {
-        _callback_home = newFunction;
-    }
-    void attachSpinMenu(callbackFunction newFunction)
-    {
-        _callback_spin_menu = newFunction;
-    }
-    void attachSpinCmd(callbackFunction newFunction)
-    {
-        _callback_spin_cmd = newFunction;
-    }
+    void callback_boot(void);
+
+    void callback_home(void);
+    void callback_mute(bool isMute);
+    void callback_volume(uint8_t vol);
+
+    void callback_spin_menu(void);
+    void callback_spin_cmd(void);
 
 private:
     /**
@@ -124,17 +119,17 @@ private:
     volatile  bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;
 
 
-    bool mute = false;
-    unsigned char cur_vol = 50;
+    bool m_mute = false;
+    uint8_t m_cur_vol = 50;
 
     unsigned long _startTime   = 0;      // start of current input change to checking timeout;
     unsigned long LOADING_TIME = 5000; // 5s
     unsigned long TIME_OUT     = 15000;    // 15s
 
-    callbackFunction _callback_boot      = NULL;
-    callbackFunction _callback_home      = NULL;
-    callbackFunction _callback_spin_menu = NULL;
-    callbackFunction _callback_spin_cmd  = NULL;
+    // callbackFunction _callback_boot      = NULL;
+    // callbackFunction _callback_home      = NULL;
+    // callbackFunction _callback_spin_menu = NULL;
+    // callbackFunction _callback_spin_cmd  = NULL;
 
 };
 #endif

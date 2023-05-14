@@ -237,8 +237,8 @@
   
 //   if( lastSecond != secondHand) {
 //     lastSecond = secondHand;
-//     // currentPalette = OceanColors_p;           speed = 5; scale = 30; colorLoop = 1; 
-//     currentPalette = CloudColors_p;           speed =  4; scale = 40; colorLoop = 1;
+//     // currentPalette = OceanColors_p;           speed = 5; scale = 30; colorLoop = 0; 
+//     currentPalette = CloudColors_p;           speed =  4; scale = 30; colorLoop = 0;
 //     // if( secondHand ==  0)  { currentPalette = RainbowColors_p;         speed = 20; scale = 30; colorLoop = 1; }
 //     // if( secondHand ==  5)  { SetupPurpleAndGreenPalette();             speed = 10; scale = 50; colorLoop = 1; }
 //     // if( secondHand == 10)  { SetupBlackAndWhiteStripedPalette();       speed = 20; scale = 30; colorLoop = 1; }

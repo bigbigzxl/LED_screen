@@ -1,15 +1,109 @@
 #include "menuFSM.h"
-#include "menu/cmd.h"
+
+
+static Menu* g_FSM = nullptr;
+
+Menu* Menu::getInstance()
+{
+    if (g_FSM == nullptr)
+    {
+        g_FSM = new Menu();
+    }
+    return g_FSM;
+}
+
+void Menu::callback_boot(void)
+{
+  Serial.println("call_back: boot");
+  Display* screen = Display::getInstance();
+  screen->showLogo(0);
+}
+
+void Menu::callback_mute(bool isMute)
+{
+  if (isMute)
+  {
+    Serial.println("call_back: mute");
+    Display* screen = Display::getInstance();
+    screen->drawstring((unsigned char *)"  Mute  ");
+    screen->render();
+  }
+  else
+  {
+    callback_home();
+  }
+
+}
+
+void Menu::callback_volume(uint8_t vol)
+{
+    vol = vol < 0 ? 0 : vol;
+    vol = vol > 200 ? 200 : vol;
+      
+    unsigned char unit    = 48 + vol / 1 % 10;
+    unsigned char ten     = 48 + vol / 10 % 10;
+    unsigned char hundred = 48 + vol / 100 % 10;
+   
+    unsigned char tmp[8] = {'V','O','L',' ',' ',' ',' ',' '};
+
+    if (hundred > 48) {tmp[5] = hundred;}
+
+    if (ten > 48) {tmp[6] = ten;}
+    else if (ten == 48 && hundred > 48) {tmp[6] = ten;}
+
+    if (unit >= 48) {tmp[7] = unit;}
+
+    Display* screen = Display::getInstance();
+    screen->drawstring(tmp);
+    screen->render();
+}
+
+
+
+void Menu::callback_home()
+{
+    Serial.println("call_back: home");
+    Display* screen = Display::getInstance();
+    screen->drawstring((unsigned char *)"AES P441");
+    screen->render();
+}
+
+
+void Menu::callback_spin_menu()
+{        
+    Serial.println("call_back: spin_menu");
+    if (cur_cmd_index < 0)
+    {
+        cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
+    }
+    else
+    {
+        cur_cmd_index %= all_cmd_num;
+    }
+    
+    update_cmd_str();
+
+    Display* screen = Display::getInstance();
+    screen->drawstring(cur_text);
+    screen->render();
+}
+
+void Menu::callback_spin_cmd()
+{
+    // director->runWithScene(dot2d::Matrix::create()); // power on LOGO render.
+    Serial.println("call_back: spin_cmd");
+}
+
+
 
 void Menu::tick()
 {
   unsigned long now = millis(); // current (relative) time in msecs.
   unsigned long waitTime = (now - _startTime);
 
-  if (!_power_state) // poweroff 
+  if (!_power_state && _state != POWEROFF) // poweroff 
   {
     _newState(POWEROFF, now);
-    return;
   }
 
   // Implementation of the state machine.
@@ -17,7 +111,7 @@ void Menu::tick()
   {
   case POWEROFF: // IDLE statue
   {
-    if (_lastState != POWEROFF) {Serial.println("POWEROFF");}
+    // if (_lastState != POWEROFF) {Serial.println("POWEROFF");}
 
     if (_power_state) // poweron 
     {
@@ -31,6 +125,14 @@ void Menu::tick()
         Serial.println("power off, state epoll.");
         _startTime = now;
         // vTaskDelay(3000 / portTICK_PERIOD_MS);
+      }
+
+      if (_buttonState == L_CLICK)
+      {
+        _newState(POWERON, now);
+        _power_state = true;
+        _buttonState = IDLE;
+         Serial.println("enter POWERON state.");
       }
     }
     else
@@ -50,13 +152,15 @@ void Menu::tick()
 
   case POWERON:
   {
-    if (_lastState != POWERON) {Serial.println("POWERON");}
+    // if (_lastState != POWERON) {Serial.println("POWERON");}
 
     if (_lastState == POWEROFF)
     {
       // boot: attach boot function from main;
-      _callback_boot();
+      Serial.println("start call boot process.");
+      callback_boot();
       _newState(HOME, now);
+       Serial.println("start enter HOME state.");
     }
     // else if (_lastState == POWERON)
     // {
@@ -86,54 +190,50 @@ void Menu::tick()
     // {
     //   break;
     // }
-
-   if (_lastState == HOME)
+    if (waitTime > 3000 && !_delta && !m_mute)
     {
-      if (waitTime > 3000 )
-      {
-        // Serial.println("power off, state epoll.");
-        _callback_home();
-        _startTime = now;
-      }
+      // Serial.println("power off, state epoll.");
+      callback_home();
     }
+  //  if (_lastState == HOME)
+  //   {
+
+  //   }
 
     // mute
     if (_buttonState == CLICK)
     {
-      if (mute)
+      if (m_mute)
       {
-        set_voice_volume(cur_vol);
-        mute = false;
+        set_voice_volume(m_cur_vol);
+        m_mute = false;
       }
       else
       {
+        m_mute = true;
         set_voice_volume(0);
       }
 
+      callback_mute(m_mute);
+
       _buttonState = IDLE;
-    }
-
-    if (_delta)
-    {
-      // Vol: 0~200
-      cur_vol += _delta;
-      cur_vol = cur_vol < 0 ? 0 : cur_vol;
-      cur_vol = cur_vol > 200 ? 200 : cur_vol;
-      _delta = 0;
-      show_voice_volume(cur_vol);
-
-      // Serial.printf("%s\n", cur_text);
-      // Serial.printf("%d", cur_vol);
-      // _callback_spin_menu();
+      _startTime = now;
       break;
     }
 
-
-    if (_buttonState == D_CLICK)
+    if (_delta && !m_mute)
     {
-      _callback_spin_menu();
-      _newState(MENU, now);
+      // Vol: 0~200
+      m_cur_vol += _delta;
+      _delta = 0;
+      callback_volume(m_cur_vol);
+      _startTime = now;
+      break;
+    }
 
+    if (_buttonState == D_CLICK && !m_mute)
+    {
+      _newState(MENU, now);
       _buttonState = IDLE;
       break;
     }
@@ -171,13 +271,13 @@ void Menu::tick()
     {
       cur_cmd_index += _delta;
       _delta = 0;
-      _callback_spin_menu();
+      callback_spin_menu();
       break;
     }
 
     if (waitTime >= TIME_OUT || _buttonState == L_CLICK)
     {
-      _callback_home();
+      callback_home();
       _newState(HOME, now);
       _buttonState = IDLE;
       break;
@@ -207,7 +307,7 @@ void Menu::tick()
     if (_delta)
     {
       Serial.printf("%d", _delta);
-      _callback_spin_cmd();
+      callback_spin_cmd();
       break;
     }
     break;
