@@ -24,7 +24,7 @@ m_bg_color(CRGB(0,0,0)) // CRGB(0,30,0)
     m_canvasBuffer = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
     m_matrixIndex  = (uint16_t* )malloc(sizeof(uint16_t) * m_width * m_height);
 
-    FastLED.addLeds<WS2812Controller800Khz, 18, GRB>((CRGB *)m_canvasBuffer, 280);
+    FastLED.addLeds<WS2812Controller800Khz, 18, GRB>((CRGB *)m_canvasBuffer, 280).setCorrection(0xFFB0F0);  // Use this for WS2812
     FastLED.setBrightness(10);
     init_index();
 }
@@ -66,6 +66,14 @@ void Display::showLogo(uint8_t style = 0)
             delay(300);
             end = millis(); // current (relative) time in msecs.
         }
+
+        // i = 20;
+        // while(i--)
+        // {
+        //     fadeOutAll(4);
+        //     render();
+        //     delay(10);
+        // }
     }
     else if(style == 1)
     {

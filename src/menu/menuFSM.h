@@ -11,7 +11,7 @@
 
 #include <Arduino.h>
 #include <string.h>
-#include "menu/cmd.h"
+#include "cmd/cmd.h"
 #include "display/display.h"
 // ----- Callback function types -----
 

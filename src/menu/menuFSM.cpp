@@ -21,25 +21,21 @@ void Menu::callback_boot(void)
 
 void Menu::callback_mute()
 {
+  g_mute = !g_mute;
+
   if (g_mute)
   {
-    set_voice_volume(g_cur_vol);
-    g_mute = false;
-
+    set_voice_volume(0);
     Display* screen = Display::getInstance();
     screen->drawstring((unsigned char *)"  Mute  ");
     screen->render();
-
-    Serial.println("call_back: mute");
-
+    // Serial.println("call_back: mute");
   }
   else
   {
-    g_mute = true;
-    set_voice_volume(0);
+    set_voice_volume(g_cur_vol);
     callback_home();
   }
-
 }
 
 void Menu::callback_volume(int8_t delta)
@@ -88,10 +84,10 @@ void Menu::callback_spin_menu()
 {        
     while (g_cur_cmd_index < 0)
     {
-        g_cur_cmd_index = (g_cur_cmd_index + all_cmd_num) % all_cmd_num;
+        g_cur_cmd_index = (g_cur_cmd_index + g_all_cmd_num) % g_all_cmd_num;
     }
     
-    g_cur_cmd_index %= all_cmd_num;
+    g_cur_cmd_index %= g_all_cmd_num;
     
     
     int16_t menu_len = strlen(g_MENU[g_cur_cmd_index]);
@@ -113,13 +109,23 @@ void Menu::callback_spin_menu()
         g_cur_text[menu_len + i] = *(g_cur_cmd_values[g_cur_cmd_index] + i);
     }
 
+    if (g_cur_cmd_index == 0)
+    {
+      // show current vol
+    }
+    else if (g_cur_cmd_index == 1)
+    {
+      // show RGB
+
+    }
+    
     Display* screen = Display::getInstance();
     screen->drawstring(g_cur_text);
     screen->render();
     Serial.println("call_back: spin_menu");
 }
 
-void Menu::callback_spin_cmd(int8_t delta)
+void Menu::callback_spin_set(int8_t delta)
 {
 
 }
@@ -142,17 +148,20 @@ void Menu::callback_spin_cmd(int8_t delta)
   if ( cmd_candidate_num == 1) {return;} // can not modify.
 
   int8_t cur_cmd_index = -1;
+  Serial.printf("%s", g_cur_cmd_values[g_cur_cmd_index]);
   for (int8_t i = 0; i < cmd_candidate_num; i++)
   {
     if(!strcmp(g_cur_cmd_values[g_cur_cmd_index], g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + i]))
     {
       cur_cmd_index = i;
     }
+  Serial.printf("%s", g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + i]);
   }
 
   if (cur_cmd_index < 0)
   {
     Serial.println("call_back: spin_cmd; ERROR: cant found cmd items.");
+    return;
   }
 
   delta += cur_cmd_index;
@@ -162,7 +171,9 @@ void Menu::callback_spin_cmd(int8_t delta)
   }
   delta %= cmd_candidate_num;
 
-  const char * selected_cmd = g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + delta];
+  char selected_cmd[8];
+  strcpy(selected_cmd, g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + delta]);
+   
   uint8_t key_len = strlen(g_MENU[g_cur_cmd_index]);
 
   if (g_cur_cmd_index == 1 && delta > 0)
@@ -170,23 +181,23 @@ void Menu::callback_spin_cmd(int8_t delta)
     if (delta == 1)
     {
       uint8_t r = 100 * g_char_r / 255.0;
-      g_cur_text[5] = "R";
-      g_cur_text[6] = "0" + r / 10;
-      g_cur_text[7] = "0" + r % 10;
+      g_cur_text[5] = 'R';
+      g_cur_text[6] = '0' + r / 10;
+      g_cur_text[7] = '0' + r % 10;
     }
     else if (delta == 2)
     {
       uint8_t g = 100 * g_char_g / 255.0;
-      g_cur_text[5] = "G";
-      g_cur_text[6] = "0" + g / 10;
-      g_cur_text[7] = "0" + g % 10;
+      g_cur_text[5] = 'G';
+      g_cur_text[6] = '0' + g / 10;
+      g_cur_text[7] = '0' + g % 10;
     }
     else if (delta == 3)
     {
       uint8_t b = 100 * g_char_b / 255.0;
-      g_cur_text[5] = "B";
-      g_cur_text[6] = "0" + b / 10;
-      g_cur_text[7] = "0" + b % 10;
+      g_cur_text[5] = 'B';
+      g_cur_text[6] = '0' + b / 10;
+      g_cur_text[7] = '0' + b % 10;
     }
     else
     {
@@ -252,7 +263,7 @@ void Menu::tick()
 
     if (_lastState == POWEROFF)
     {
-      if (waitTime > 3000 )
+      if (waitTime > 5000 )
       {
         Serial.println("power off, state epoll.");
         _startTime = now;
@@ -322,7 +333,14 @@ void Menu::tick()
     // {
     //   break;
     // }
-    if (waitTime > 3000 && !_delta && !g_mute)
+    if (g_mute && _buttonState != CLICK)
+    {
+      _delta = 0;
+      // _startTime = now; // once get out of mute, just go in home display();
+      break;
+    }
+
+    if (waitTime > TIME_OUT && !_delta && !g_mute)
     {
       callback_home();
       _startTime = now;
@@ -348,17 +366,12 @@ void Menu::tick()
 
     if (_buttonState == D_CLICK && !g_mute)
     {
+      callback_spin_menu();
       _newState(MENU, now);
       _buttonState = IDLE;
       break;
     }
-    // if (_buttonState == L_CLICK)
-    // {
-    //   _callback_home();
-    //   _newState(HOME, now);
-    //   _buttonState = IDLE;
-    //   break;
-    // }
+
     
     // state is not POWERON/HOME/DIY/GAME;
     // if (!(_lastState == DIY || _lastState == GAME) && waitTime >= TIME_OUT)
@@ -381,11 +394,12 @@ void Menu::tick()
       break;
     }
 
-    if (_delta || _lastState != MENU)
+    if (_delta)
     {
       g_cur_cmd_index += _delta;
       _delta = 0;
       callback_spin_menu();
+      _startTime = now;
       break;
     }
 
@@ -412,6 +426,7 @@ void Menu::tick()
     if (_buttonState == D_CLICK)
     {
       //TODO: restore cfg and update.
+      callback_spin_menu();
       _newState(MENU, now);
       _buttonState = IDLE;
       break;
@@ -422,6 +437,7 @@ void Menu::tick()
       // Serial.printf("%d", _delta);
       callback_spin_cmd(_delta);
       _delta = 0;
+      _startTime = now;
       break;
     }
 

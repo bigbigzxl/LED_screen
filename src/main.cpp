@@ -5,8 +5,7 @@
 #include "FastLED.h"
 
 #include "menu/menuFSM.h"
-#include "ui/menu_ui.h"
-#include "menu/cmd.h"
+#include "cmd/cmd.h"
 
 // EC11 config
 #define EC11_A_PIN 25
@@ -69,17 +68,6 @@ void longclick()
     Serial.println("main: long click.\n");
 }
 
-
-
-
-// uint32_t dotOrder(uint16_t x, uint16_t y)
-// {
-//     uint16_t factor = floor(x / 5);
-//     uint32_t order = y * 5 + x % 5 + factor * 35;
-//     return order;
-// }
-
-
 void setup()
 {
     Serial.begin(115200);
@@ -123,7 +111,7 @@ void loop()
 
     // delay(10);
     // unsigned long start = millis(); // current (relative) time in msecs.
-    // director->mainLoop();
+
     // unsigned long end = millis(); // current (relative) time in msecs.
     // Serial.printf("%d \n", end - start);
 }
