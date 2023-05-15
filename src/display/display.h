@@ -5,6 +5,7 @@
 #include <math.h>
 #include "FastLED.h"
 #include "glcdfont.h"
+#include "cmd/cmd.h"
 
 #define INLINE inline __attribute__((always_inline))
 #define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
@@ -30,7 +31,8 @@ public:
     void writePixel(int16_t x, int16_t y, const CRGB& color);
     void drawChar(int16_t x, int16_t y, unsigned char c, CRGB& color,CRGB& bg);
     void drawstring(unsigned char* s);
-
+    void setCharColor(uint8_t r, uint8_t g, uint8_t b);
+    void setBgColor(uint8_t r, uint8_t g, uint8_t b);
     // for clear screen;
     void fillScreen(const CRGB& color);
     void screenReset(void);

@@ -18,7 +18,7 @@ m_ledpin(led_pin),
 m_width(W), 
 m_height(H),
 m_total_char_num(8), 
-m_char_color( CRGB(100,100,0)), 
+m_char_color( CRGB(g_char_r,g_char_g,g_char_b)), 
 m_bg_color(CRGB(0,0,0)) // CRGB(0,30,0)
 {
     m_canvasBuffer = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
@@ -35,6 +35,15 @@ Display::~Display()
     delete m_matrixIndex;
 }
 
+void Display::setCharColor(uint8_t r, uint8_t g, uint8_t b)
+{
+    m_char_color = CRGB(r,g,b);
+}
+
+void Display::setBgColor(uint8_t r, uint8_t g, uint8_t b)
+{
+    m_bg_color = CRGB(r,g,b);
+}
 
 void Display::showLogo(uint8_t style = 0)
 {

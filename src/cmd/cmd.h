@@ -11,17 +11,15 @@
 // const int32_t cmd_pos[]; 
 // const char* cmd_items[];
 
-extern float Voltage;
-extern int16_t cur_cmd_index;
-extern int32_t all_cmd_num;
-extern unsigned char cur_text[9];
-extern char* cur_cmd_values[]; 
 
-void update_cmd_str(void);
-
-void show_8char(unsigned char * s);
-
-void show_voice_volume(unsigned char vol);
-
+extern int16_t g_cur_cmd_index;
+extern int32_t g_all_cmd_num;
+extern unsigned char g_cur_text[9];
+extern char* g_cur_cmd_values[]; 
+extern bool g_mute;
+extern uint8_t g_cur_vol;
+extern uint8_t g_char_r;
+extern uint8_t g_char_g;
+extern uint8_t g_char_b;
 void set_voice_volume(unsigned char vol);
 #endif // FONT5X7_H

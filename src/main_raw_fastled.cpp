@@ -121,7 +121,7 @@ void loop()
     }
     menuFSM->tick();
 
-    delay(10);
+    // delay(10);
     // unsigned long start = millis(); // current (relative) time in msecs.
     // director->mainLoop();
     // unsigned long end = millis(); // current (relative) time in msecs.

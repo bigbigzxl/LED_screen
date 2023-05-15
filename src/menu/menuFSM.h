@@ -10,6 +10,7 @@
 #define MENU_H
 
 #include <Arduino.h>
+#include <string.h>
 #include "menu/cmd.h"
 #include "display/display.h"
 // ----- Callback function types -----
@@ -40,6 +41,7 @@ public:
         HOME,
         MENU,
         CMD,
+        SET,
         EXE,
         DIY,
         GAME
@@ -96,11 +98,12 @@ public:
     void callback_boot(void);
 
     void callback_home(void);
-    void callback_mute(bool isMute);
-    void callback_volume(uint8_t vol);
+    void callback_mute(void);
+    void callback_volume(int8_t delta);
 
     void callback_spin_menu(void);
-    void callback_spin_cmd(void);
+    void callback_spin_cmd(int8_t delta);
+    void callback_spin_set(int8_t delta);
 
 private:
     /**
@@ -117,10 +120,6 @@ private:
 
     volatile  bool _power_state = 0;         // 0 for power off; 1 for power on.
     volatile  bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;
-
-
-    bool m_mute = false;
-    uint8_t m_cur_vol = 50;
 
     unsigned long _startTime   = 0;      // start of current input change to checking timeout;
     unsigned long LOADING_TIME = 5000; // 5s

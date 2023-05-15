@@ -19,37 +19,52 @@ void Menu::callback_boot(void)
   screen->showLogo(0);
 }
 
-void Menu::callback_mute(bool isMute)
+void Menu::callback_mute()
 {
-  if (isMute)
+  if (g_mute)
   {
-    Serial.println("call_back: mute");
+    set_voice_volume(g_cur_vol);
+    g_mute = false;
+
     Display* screen = Display::getInstance();
     screen->drawstring((unsigned char *)"  Mute  ");
     screen->render();
+
+    Serial.println("call_back: mute");
+
   }
   else
   {
+    g_mute = true;
+    set_voice_volume(0);
     callback_home();
   }
 
 }
 
-void Menu::callback_volume(uint8_t vol)
+void Menu::callback_volume(int8_t delta)
 {
-    vol = vol < 0 ? 0 : vol;
-    vol = vol > 200 ? 200 : vol;
+    int16_t cur_vol = g_cur_vol + delta;
+    cur_vol = cur_vol < 0 ? 0 : cur_vol;
+    cur_vol = cur_vol > 200 ? 200 : cur_vol;
+    g_cur_vol = (uint8_t)cur_vol;
       
-    unsigned char unit    = 48 + vol / 1 % 10;
-    unsigned char ten     = 48 + vol / 10 % 10;
-    unsigned char hundred = 48 + vol / 100 % 10;
+    unsigned char unit    = 48 + g_cur_vol / 1 % 10;
+    unsigned char ten     = 48 + g_cur_vol / 10 % 10;
+    unsigned char hundred = 48 + g_cur_vol / 100 % 10;
    
     unsigned char tmp[8] = {'V','O','L',' ',' ',' ',' ',' '};
 
     if (hundred > 48) {tmp[5] = hundred;}
 
-    if (ten > 48) {tmp[6] = ten;}
-    else if (ten == 48 && hundred > 48) {tmp[6] = ten;}
+    if (ten > 48)
+    {
+      tmp[6] = ten;
+    }
+    else if (ten == 48 && hundred > 48)
+    {
+      tmp[6] = ten;
+    }
 
     if (unit >= 48) {tmp[7] = unit;}
 
@@ -71,27 +86,144 @@ void Menu::callback_home()
 
 void Menu::callback_spin_menu()
 {        
-    Serial.println("call_back: spin_menu");
-    if (cur_cmd_index < 0)
+    while (g_cur_cmd_index < 0)
     {
-        cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
+        g_cur_cmd_index = (g_cur_cmd_index + all_cmd_num) % all_cmd_num;
+    }
+    
+    g_cur_cmd_index %= all_cmd_num;
+    
+    
+    int16_t menu_len = strlen(g_MENU[g_cur_cmd_index]);
+    int16_t cmd_len = strlen(g_cur_cmd_values[g_cur_cmd_index]);
+    // Serial.printf("strlen done.");
+    if (menu_len + cmd_len != 8)
+    {
+        Serial.printf("cmd length error!!!%s, %s, %d", menu_len, cmd_len, cmd_len);
+        return;
+    }
+    
+    for (int i = 0; i < menu_len; i++)
+    {
+        g_cur_text[i] = *(g_MENU[g_cur_cmd_index] + i);
+    }
+
+    for (int i = 0; i < cmd_len; i++)
+    {
+        g_cur_text[menu_len + i] = *(g_cur_cmd_values[g_cur_cmd_index] + i);
+    }
+
+    Display* screen = Display::getInstance();
+    screen->drawstring(g_cur_text);
+    screen->render();
+    Serial.println("call_back: spin_menu");
+}
+
+void Menu::callback_spin_cmd(int8_t delta)
+{
+
+}
+
+
+void Menu::callback_spin_cmd(int8_t delta)
+{
+
+  Display* screen = Display::getInstance();
+
+  // TODO: spark background.
+  if (g_cur_cmd_index == 0)
+  {
+    // adjust volume.
+    callback_volume(delta);
+    return;
+  }
+
+  int8_t cmd_candidate_num = g_CMD_POS[g_cur_cmd_index+1] - g_CMD_POS[g_cur_cmd_index];
+  if ( cmd_candidate_num == 1) {return;} // can not modify.
+
+  int8_t cur_cmd_index = -1;
+  for (int8_t i = 0; i < cmd_candidate_num; i++)
+  {
+    if(!strcmp(g_cur_cmd_values[g_cur_cmd_index], g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + i]))
+    {
+      cur_cmd_index = i;
+    }
+  }
+
+  if (cur_cmd_index < 0)
+  {
+    Serial.println("call_back: spin_cmd; ERROR: cant found cmd items.");
+  }
+
+  delta += cur_cmd_index;
+  while(delta < 0)
+  {
+    delta += cmd_candidate_num;
+  }
+  delta %= cmd_candidate_num;
+
+  const char * selected_cmd = g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + delta];
+  uint8_t key_len = strlen(g_MENU[g_cur_cmd_index]);
+
+  if (g_cur_cmd_index == 1 && delta > 0)
+  {
+    if (delta == 1)
+    {
+      uint8_t r = 100 * g_char_r / 255.0;
+      g_cur_text[5] = "R";
+      g_cur_text[6] = "0" + r / 10;
+      g_cur_text[7] = "0" + r % 10;
+    }
+    else if (delta == 2)
+    {
+      uint8_t g = 100 * g_char_g / 255.0;
+      g_cur_text[5] = "G";
+      g_cur_text[6] = "0" + g / 10;
+      g_cur_text[7] = "0" + g % 10;
+    }
+    else if (delta == 3)
+    {
+      uint8_t b = 100 * g_char_b / 255.0;
+      g_cur_text[5] = "B";
+      g_cur_text[6] = "0" + b / 10;
+      g_cur_text[7] = "0" + b % 10;
     }
     else
     {
-        cur_cmd_index %= all_cmd_num;
+      Serial.println("call_back: spin_cmd; ERROR: DISP: RGB index err..");
+      return;
     }
-    
-    update_cmd_str();
+  }
+  else
+  {
+    for (uint8_t i = key_len; i < 8; i++)
+    {
+        g_cur_text[i] = *(g_cur_cmd_values[g_cur_cmd_index] + i);
+    }
+    // update g_cur_cmd_values;
+    g_cur_cmd_values[g_cur_cmd_index] = selected_cmd;
+  }
 
-    Display* screen = Display::getInstance();
-    screen->drawstring(cur_text);
-    screen->render();
-}
-
-void Menu::callback_spin_cmd()
-{
-    // director->runWithScene(dot2d::Matrix::create()); // power on LOGO render.
-    Serial.println("call_back: spin_cmd");
+  screen->drawstring(g_cur_text);
+  screen->render();
+  // int count = 100;
+  // while(count--)
+  // {
+  //     if (count > 75)
+  //     {
+  //         // screen.fadeOutChar(5, 1);
+  //         screen.fadeOutAll(1);
+  //     }
+  //     else
+  //     {
+  //         // screen.fadeOutChar(5, 5);
+  //         screen.fadeOutAll(10);
+  //     }
+  //     //  screen.fadeOutChar(5, 10);
+  //     screen.render();
+  //     //  delay(10);
+  // }
+  Serial.println("call_back: spin_cmd");
 }
 
 
@@ -190,48 +322,31 @@ void Menu::tick()
     // {
     //   break;
     // }
-    if (waitTime > 3000 && !_delta && !m_mute)
+    if (waitTime > 3000 && !_delta && !g_mute)
     {
-      // Serial.println("power off, state epoll.");
       callback_home();
+      _startTime = now;
     }
-  //  if (_lastState == HOME)
-  //   {
-
-  //   }
 
     // mute
     if (_buttonState == CLICK)
     {
-      if (m_mute)
-      {
-        set_voice_volume(m_cur_vol);
-        m_mute = false;
-      }
-      else
-      {
-        m_mute = true;
-        set_voice_volume(0);
-      }
-
-      callback_mute(m_mute);
-
+      callback_mute();
       _buttonState = IDLE;
       _startTime = now;
       break;
     }
 
-    if (_delta && !m_mute)
+    if (_delta && !g_mute)
     {
       // Vol: 0~200
-      m_cur_vol += _delta;
+      callback_volume(_delta);
       _delta = 0;
-      callback_volume(m_cur_vol);
       _startTime = now;
       break;
     }
 
-    if (_buttonState == D_CLICK && !m_mute)
+    if (_buttonState == D_CLICK && !g_mute)
     {
       _newState(MENU, now);
       _buttonState = IDLE;
@@ -258,8 +373,7 @@ void Menu::tick()
 
   case MENU:
   {
-    // if (_lastState != MENU) {Serial.println("MENU");}
-    
+   
     if (_buttonState == D_CLICK)
     {
       _newState(CMD, now);
@@ -269,7 +383,7 @@ void Menu::tick()
 
     if (_delta || _lastState != MENU)
     {
-      cur_cmd_index += _delta;
+      g_cur_cmd_index += _delta;
       _delta = 0;
       callback_spin_menu();
       break;
@@ -288,29 +402,55 @@ void Menu::tick()
 
   case CMD:
   {
-   if (_lastState != CMD) {Serial.println("CMD");}
-
     if (_buttonState == CLICK)
     {
-      _newState(MENU, now);
+      _newState(SET, now);
       _buttonState = IDLE;
       break;
     }
 
-    if (_buttonState == L_CLICK || waitTime > TIME_OUT)
+    if (_buttonState == D_CLICK)
     {
-       _newState(HOME, now);
+      //TODO: restore cfg and update.
+      _newState(MENU, now);
       _buttonState = IDLE;
       break;
     }
 
     if (_delta)
     {
-      Serial.printf("%d", _delta);
-      callback_spin_cmd();
+      // Serial.printf("%d", _delta);
+      callback_spin_cmd(_delta);
+      _delta = 0;
+      break;
+    }
+
+    if (_buttonState == L_CLICK || waitTime > TIME_OUT)
+    {
+      callback_home();
+      _newState(HOME, now);
+      _buttonState = IDLE;
       break;
     }
     break;
+  }
+  case SET:
+  {
+  if (_buttonState == CLICK)
+  {
+    _newState(CMD, now);
+    _buttonState = IDLE;
+    break;
+  }
+
+  if (_delta)
+  {
+    // Serial.printf("%d", _delta);
+    callback_spin_set(_delta);
+    _delta = 0;
+    break;
+  }
+
   }
   
   default:
