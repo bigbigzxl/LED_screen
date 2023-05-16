@@ -75,6 +75,7 @@ void Menu::callback_home()
 {
     Serial.println("call_back: home");
     Display* screen = Display::getInstance();
+    screen->setCharColor(100,100,100);
     screen->drawstring((unsigned char *)"AES P441");
     screen->render();
 }
@@ -91,7 +92,8 @@ void Menu::callback_spin_menu()
     
     
     int16_t menu_len = strlen(g_MENU[g_cur_cmd_index]);
-    int16_t cmd_len = strlen(g_cur_cmd_values[g_cur_cmd_index]);
+    const char* cur_cmd = g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + g_cur_cmd_pos[g_cur_cmd_index]];
+    int16_t cmd_len = strlen(cur_cmd);
     // Serial.printf("strlen done.");
     if (menu_len + cmd_len != 8)
     {
@@ -106,7 +108,7 @@ void Menu::callback_spin_menu()
 
     for (int i = 0; i < cmd_len; i++)
     {
-        g_cur_text[menu_len + i] = *(g_cur_cmd_values[g_cur_cmd_index] + i);
+        g_cur_text[menu_len + i] = *(cur_cmd + i);
     }
 
     if (g_cur_cmd_index == 0)
@@ -120,6 +122,7 @@ void Menu::callback_spin_menu()
     }
     
     Display* screen = Display::getInstance();
+    screen->setCharColor(0,100,0);
     screen->drawstring(g_cur_text);
     screen->render();
     Serial.println("call_back: spin_menu");
@@ -147,33 +150,16 @@ void Menu::callback_spin_cmd(int8_t delta)
   int8_t cmd_candidate_num = g_CMD_POS[g_cur_cmd_index+1] - g_CMD_POS[g_cur_cmd_index];
   if ( cmd_candidate_num == 1) {return;} // can not modify.
 
-  int8_t cur_cmd_index = -1;
-  Serial.printf("%s", g_cur_cmd_values[g_cur_cmd_index]);
-  for (int8_t i = 0; i < cmd_candidate_num; i++)
-  {
-    if(!strcmp(g_cur_cmd_values[g_cur_cmd_index], g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + i]))
-    {
-      cur_cmd_index = i;
-    }
-  Serial.printf("%s", g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + i]);
-  }
-
-  if (cur_cmd_index < 0)
-  {
-    Serial.println("call_back: spin_cmd; ERROR: cant found cmd items.");
-    return;
-  }
-
-  delta += cur_cmd_index;
+  delta += g_cur_cmd_pos[g_cur_cmd_index];
   while(delta < 0)
   {
     delta += cmd_candidate_num;
   }
   delta %= cmd_candidate_num;
 
-  char selected_cmd[8];
-  strcpy(selected_cmd, g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + delta]);
-   
+  const char* selected_cmd = g_CMD_SET[g_CMD_POS[g_cur_cmd_index] + delta];
+  Serial.printf("%s\n", selected_cmd);
+
   uint8_t key_len = strlen(g_MENU[g_cur_cmd_index]);
 
   if (g_cur_cmd_index == 1 && delta > 0)
@@ -207,14 +193,14 @@ void Menu::callback_spin_cmd(int8_t delta)
   }
   else
   {
-    for (uint8_t i = key_len; i < 8; i++)
+    for (uint8_t i = 0; i < 8 - key_len; i++)
     {
-        g_cur_text[i] = *(g_cur_cmd_values[g_cur_cmd_index] + i);
+        g_cur_text[i + key_len] = *(selected_cmd + i);
     }
-    // update g_cur_cmd_values;
-    g_cur_cmd_values[g_cur_cmd_index] = selected_cmd;
+    // update g_cur_cmd_pos;
+   g_cur_cmd_pos[g_cur_cmd_index] = delta;
   }
-
+  screen->setCharColor(100,0,0);
   screen->drawstring(g_cur_text);
   screen->render();
   // int count = 100;
@@ -302,8 +288,12 @@ void Menu::tick()
       // boot: attach boot function from main;
       Serial.println("start call boot process.");
       callback_boot();
+
+      callback_home();
       _newState(HOME, now);
-       Serial.println("start enter HOME state.");
+      _buttonState = IDLE;
+      _delta = 0;
+      Serial.println("start enter HOME state.");
     }
     // else if (_lastState == POWERON)
     // {
@@ -389,6 +379,7 @@ void Menu::tick()
    
     if (_buttonState == D_CLICK)
     {
+      callback_spin_cmd(_delta);
       _newState(CMD, now);
       _buttonState = IDLE;
       break;

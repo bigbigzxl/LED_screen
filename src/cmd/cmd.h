@@ -18,7 +18,7 @@ extern const char* g_CMD_SET[];
 extern int16_t g_cur_cmd_index;
 extern int32_t g_all_cmd_num;
 extern unsigned char g_cur_text[9];
-extern char* g_cur_cmd_values[]; 
+extern uint8_t g_cur_cmd_pos[]; 
 extern bool g_mute;
 extern uint8_t g_cur_vol;
 extern uint8_t g_char_r;
@@ -28,4 +28,4 @@ void set_voice_volume(unsigned char vol);
 #endif // FONT5X7_H
 
 
-// FastLED.addLeds<WS2812Controller800Khz, 18, GRB>((CRGB *)leds, 40*7).setCorrection(0xFFB0F0);  // Use this for WS2812//
+// g_cur_cmd_pos // Use this for WS2812//

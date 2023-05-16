@@ -105,6 +105,7 @@ public:
     void callback_spin_cmd(int8_t delta);
     void callback_spin_set(int8_t delta);
 
+
 private:
     /**
      *  Advance to a new state and save the last one to come back

@@ -71,22 +71,10 @@ uint8_t g_char_g = 99;
 uint8_t g_char_b = 99;
 
 unsigned char g_cur_text[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
-char* g_cur_cmd_values[] = {
-    (char*)"000", // 0~200 uint8
-    (char*)"CLR", // char color
-    (char*)"AES",
-    (char*)"  0",
-    (char*)"FAST", 
-    
-    (char*)"INT", 
-    (char*)"HPA", 
-    (char*)"LO", 
-    (char*)"OFF",
-    (char*)" 5S", 
-    
-    (char*)"S001",
-    (char*)"S0xxx",
-    (char*)"2209"
+uint8_t g_cur_cmd_pos[] = {
+   0,0,0,0,0,
+   0,0,0,0,0,
+   0,0,0
 }; 
 
 
