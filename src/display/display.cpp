@@ -21,7 +21,10 @@ m_total_char_num(8),
 m_char_color( CRGB(g_char_r,g_char_g,g_char_b)), 
 m_bg_color(CRGB(0,0,0)) // CRGB(0,30,0)
 {
-    m_canvasBuffer = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
+    m_canvasBuffer_ping = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
+    m_canvasBuffer_pong = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
+
+    m_canvasBuffer = m_canvasBuffer_ping;
     m_matrixIndex  = (uint16_t* )malloc(sizeof(uint16_t) * m_width * m_height);
 
     FastLED.addLeds<WS2812Controller800Khz, 18, GRB>((CRGB *)m_canvasBuffer, 280).setCorrection(0xFFB0F0);  // Use this for WS2812
@@ -243,6 +246,7 @@ void Display::fadeOutAll(uint8_t delta) // default = 10
     // // FastLED.show();
     // FastLED.delay(1000/FRAMES_PER_SECOND); 
 }
+
 void Display::fadeOutChar(int8_t char_index, uint8_t delta = 10)
 {
     if (char_index < 0)
@@ -258,6 +262,50 @@ void Display::fadeOutChar(int8_t char_index, uint8_t delta = 10)
     fadeToBlackBy(m_canvasBuffer + per_char_pixel_num * char_index, per_char_pixel_num, delta);
     // fadeToBlackBy(m_canvasBuffer, m_width*m_height, 10); 
 } 
+
+void Display::animation(float *a, float *a_trg, uint8_t n = 60)
+{
+  if (fabs(*a - *a_trg) < 0.15) *a = *a_trg;
+  if (*a != *a_trg) *a += (*a_trg - *a) / (n / 10.0);
+}
+
+void Display::drawstring_slide_in(unsigned char* s)
+{
+    // write data in pong buffer.
+    m_canvasBuffer = m_canvasBuffer_pong;
+    screenReset();
+    for (uint16_t x = 0; x < m_width; x++)
+    {
+        drawChar(x*5, 0, s[x], m_char_color, m_bg_color);
+    }
+    m_canvasBuffer = m_canvasBuffer_ping;
+
+    float h_trg = 0.0;
+    float h = m_height;
+
+    while( h > h_trg)
+    {
+        screenReset();
+        animation(&h, &h_trg, 160);
+        for (int y = 0; y < m_height; y++)
+        {
+            if (y < int(h))
+            {
+        
+            }
+
+            for (int x = 0; x < m_width; x++)
+            {
+                // m_canvasBuffer[XY(x,y)] = m_canvasBuffer_pong[XY(x,m_height - y -1)]; // mirrow
+                m_canvasBuffer[XY(x,y)] = m_canvasBuffer_pong[XY(x, y -  int(h))];
+            } 
+           
+        }
+        render();
+        // delay(30);
+    }
+   
+}
 
 // void slideCharUp(int8_t char_index, )
 // void Display::fadeInAll() 

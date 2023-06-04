@@ -204,6 +204,13 @@ struct CRGB {
         return *this;
     }
 
+    /// allow assignment from just a Hue, saturation and value automatically at max.
+	// inline CRGB& setVal (uint8_t val) __attribute__((always_inline))
+    // {
+    //     hsv2rgb_rainbow( CHSV(hue, 255, 255), *this);
+    //     return *this;
+    // }
+
     /// allow assignment from HSV color
 	inline CRGB& operator= (const CHSV& rhs) __attribute__((always_inline))
     {

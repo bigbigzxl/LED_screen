@@ -123,7 +123,9 @@ void Menu::callback_spin_menu()
     
     Display* screen = Display::getInstance();
     screen->setCharColor(0,100,0);
-    screen->drawstring(g_cur_text);
+    // screen->drawstring(g_cur_text);
+    screen->drawstring_slide_in(g_cur_text);
+    
     screen->render();
     Serial.println("call_back: spin_menu");
 }
@@ -262,6 +264,68 @@ void Menu::tick()
         _power_state = true;
         _buttonState = IDLE;
          Serial.println("enter POWERON state.");
+      }
+
+      if (_buttonState == CLICK)
+      {
+        _buttonState = IDLE;
+        Serial.println("click.");
+        Display* screen = Display::getInstance();
+        screen->setCharColor(100,100,100);
+
+        screen->drawstring_slide_in((unsigned char *)"AES P441");
+
+        // screen->drawstring((unsigned char *)"AES P441");
+        // screen->render();
+
+        // CRGB* buf_ptr = screen->get_buffer();
+
+
+        
+        // uint32_t buf_len = 40*7;
+        // uint8_t sine8 =1;// beatsin8(120);
+        // // while(1)
+        // // {
+        // // while(sine8--)
+        // // {
+          
+        // //   for (uint16_t i = 0; i < buf_len; ++i)
+        // //   {
+        // //       // buf_ptr[i] =  buf_ptr[i].setHue(sine8);
+        // //       // hsv2rgb_raw(CHSV(255,255,sine8), buf_ptr[i]);
+        // //       FastLED.setBrightness( sine8 );
+        // //   }
+        // //   screen->render();
+        // // }
+
+        //  while(sine8++ < 255)
+        // {
+          
+        //   for (uint16_t i = 0; i < buf_len; ++i)
+        //   {
+        //       // buf_ptr[i] =  buf_ptr[i].setHue(sine8);
+        //       // hsv2rgb_raw(CHSV(255,255,sine8), buf_ptr[i]);
+        //        FastLED.setBrightness( sine8 );
+        //   }
+        //   screen->render();
+        // }
+        // // }
+        
+       
+
+        // delay(60);
+        // for (uint16_t i = 0; i < buf_len; ++i)  if (i % 2 != 0) buf_ptr[i] &= 0xAA;
+        // screen->render();
+        // delay(60);
+        // for (uint16_t i = 0; i < buf_len; ++i)  if (i % 2 != 0) buf_ptr[i] &= 0x00;
+        // screen->render();
+        // delay(60);
+        // for (uint16_t i = 0; i < buf_len; ++i)  if (i % 2 == 0) buf_ptr[i] &= 0x55;
+        // screen->render(); 
+        // delay(60);
+        // for (uint16_t i = 0; i < buf_len; ++i)  if (i % 2 == 0) buf_ptr[i] &= 0x00;
+        // screen->render();
+        // delay(60); 
       }
     }
     else

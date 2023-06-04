@@ -31,6 +31,8 @@ public:
     void writePixel(int16_t x, int16_t y, const CRGB& color);
     void drawChar(int16_t x, int16_t y, unsigned char c, CRGB& color,CRGB& bg);
     void drawstring(unsigned char* s);
+    void drawstring_slide_in(unsigned char* s);
+
     void setCharColor(uint8_t r, uint8_t g, uint8_t b);
     void setBgColor(uint8_t r, uint8_t g, uint8_t b);
     // for clear screen;
@@ -44,6 +46,8 @@ public:
     // void fadeInAll(void);
     void fadeOutAll(uint8_t delta);
     void fadeOutChar(int8_t char_index, uint8_t delta);
+    void animation(float *a, float *a_trg, uint8_t n);
+
     INLINE void render()
     {
         FastLED.show();
@@ -54,6 +58,8 @@ public:
     }
 private:
     CRGB* m_canvasBuffer; // = (CRGB *)malloc(sizeof(CRGB) * _width * _height);
+    CRGB* m_canvasBuffer_ping; // for animation.
+    CRGB* m_canvasBuffer_pong; // for animation.
     uint16_t* m_matrixIndex; // =  (uint16_t* )malloc(sizeof(uint16_t) * _width * _height);
     int m_width;
     int m_height;
