@@ -19,7 +19,7 @@ m_width(W),
 m_height(H),
 m_total_char_num(8), 
 m_char_color( CRGB(g_char_r,g_char_g,g_char_b)), 
-m_bg_color(CRGB(0,0,0)) // CRGB(0,30,0)
+m_bg_color(CRGB(0,0,30)) // CRGB(0,30,0)
 {
     m_canvasBuffer_ping = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
     m_canvasBuffer_pong = (CRGB *)malloc(sizeof(CRGB) * m_width * m_height);
@@ -216,6 +216,24 @@ void Display::drawChar(int16_t x, int16_t y, unsigned char c, CRGB& color,CRGB& 
                 writePixel(x+i, y+j, color);
             } 
             else if(bg != color) {
+                uint8_t h =  y + j;
+                uint8_t w =  x + j;
+                if ((w == 0 || h == 0 || w == 39 || h == 6)
+                    // (w == 0 && h == 1) ||
+                    // (w == 1 && h == 0) ||
+                    // (w == 0 && h == 5) ||
+                    // (w == 0 && h == 6) ||
+                    // (w == 1 && h == 6) ||
+                    // (w == 38 && h == 0) ||
+                    // (w == 38 && h == 6) ||
+                    // (w == 39 && h == 0) ||
+                    // (w == 39 && h == 1) ||
+                    // (w == 39 && h == 5) ||
+                    // (w == 39 && h == 6) 
+                    )
+                {
+                    continue;
+                }
                 writePixel(x+i, y+j, bg);
             }
         }
@@ -274,9 +292,10 @@ void Display::drawstring_slide_in(unsigned char* s)
     // write data in pong buffer.
     m_canvasBuffer = m_canvasBuffer_pong;
     screenReset();
+    CRGB tmp_bg  = CRGB(100,0,0);
     for (uint16_t x = 0; x < m_width; x++)
     {
-        drawChar(x*5, 0, s[x], m_char_color, m_bg_color);
+        drawChar(x*5, 0, s[x], m_char_color, tmp_bg);
     }
     m_canvasBuffer = m_canvasBuffer_ping;
 
@@ -285,21 +304,25 @@ void Display::drawstring_slide_in(unsigned char* s)
 
     while( h > h_trg)
     {
-        screenReset();
-        animation(&h, &h_trg, 160);
+        // screenReset();
+        animation(&h, &h_trg, 180); // 160
         for (int y = 0; y < m_height; y++)
         {
             if (y < int(h))
             {
-        
+                // uint16_t new_y = y + 1 >= m_height ? m_height - 1 : y + 1;
+                // for (int x = 0; x < m_width; x++)
+                // {
+                //     m_canvasBuffer[XY(x,y)] = m_canvasBuffer[XY(x, new_y)];
+                // } 
             }
-
-            for (int x = 0; x < m_width; x++)
-            {
-                // m_canvasBuffer[XY(x,y)] = m_canvasBuffer_pong[XY(x,m_height - y -1)]; // mirrow
-                m_canvasBuffer[XY(x,y)] = m_canvasBuffer_pong[XY(x, y -  int(h))];
+            else{
+                for (int x = 0; x < m_width; x++)
+                {
+                    // m_canvasBuffer[XY(x,y)] = m_canvasBuffer_pong[XY(x,m_height - y -1)]; // mirrow
+                    m_canvasBuffer[XY(x,y)] = m_canvasBuffer_pong[XY(x, y -  int(h))];
+                } 
             } 
-           
         }
         render();
         // delay(30);
