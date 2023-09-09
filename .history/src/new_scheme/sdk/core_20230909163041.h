@@ -1,0 +1,1 @@
+#ifdef __CORE_H__
