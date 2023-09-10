@@ -25,6 +25,13 @@ extern uint8_t g_char_r;
 extern uint8_t g_char_g;
 extern uint8_t g_char_b;
 void set_voice_volume(unsigned char vol);
+
+
+// class menu_ctr
+// {
+
+
+// };
 #endif // FONT5X7_H
 
 

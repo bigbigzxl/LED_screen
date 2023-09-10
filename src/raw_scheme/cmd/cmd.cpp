@@ -40,7 +40,7 @@ const int32_t g_CMD_POS[] = {
     26,
     27,
     28
-}; 
+};  
 const char* g_CMD_SET[] = {
     "000", // 0~200 uint8
     "CLR", "R00", "G00", "B00",// 0 ~255

@@ -27,26 +27,27 @@ int32_t delta = 0;
 
 ESP32Encoder spin(false); // true interrupt.
 OneButton spin_key(EC11_K_PIN, false, false);
-OneButton power(POWER_KEY_PIN);
+OneButton power_key(POWER_KEY_PIN);
+
 Menu* menuFSM = Menu::getInstance();
-
-
 
 void click(void);
 void doubleclick(void);
 void longclick(void);
 
+
+// callback function for power key;
 void poweron()
 {
     if (!menuFSM->get_power_state())
     {
-        menuFSM->set_power_state(true); // power on
+        menuFSM->set_power_state(true); // power_key on
     }
 }
 
 void poweroff()
 {
-    menuFSM->set_power_state(false); // power off
+    menuFSM->set_power_state(false); // power_key off if long click the button any time.
 }
 
 void click()
@@ -56,8 +57,6 @@ void click()
 
 void doubleclick()
 {
-    // menuFSM->set_power_state(!menuFSM->get_power_state()); // for test.
-    // Serial.printf("double clicked. %d", menuFSM->get_power_state());
     menuFSM->set_button_state(Menu::ButtonType::D_CLICK);
 }
 
@@ -65,7 +64,6 @@ void doubleclick()
 void longclick()
 {
     menuFSM->set_button_state(Menu::ButtonType::L_CLICK);
-    Serial.println("main: long click.\n");
 }
 
 void setup()
@@ -81,32 +79,38 @@ void setup()
     ESP32Encoder::useInternalWeakPullResistors = UP;
     spin.attachSingleEdge(EC11_A_PIN, EC11_B_PIN);
 
-    // init ec11-button.
+    // init ec11-button callback function.
     spin_key.attachClick(click);
     spin_key.attachDoubleClick(doubleclick);
     spin_key.attachLongPressStop(longclick);
     // spin_key.setDebounceTicks(20);//滤波(ms)
     // spin_key.setClickTicks(200);
     // spin_key.setPressTicks(500);
-    power.attachClick(poweron);
-    power.attachLongPressStop(poweroff);
+    
+    // init power key callback function.
+    power_key.attachClick(poweron);
+    power_key.attachLongPressStop(poweroff);
 
     Serial.println("#############setup done.##################\n");
 }
 
 void loop()
 {
+    // button input for power_key select or menu select;
     spin_key.tick();
     
+    // EC11 spin data update;
     if (lastEncoderValue != spin.getCount())
     {
         int now_count = spin.getCount();
         delta = now_count - lastEncoderValue; // global value
         lastEncoderValue = now_count;
+
         menuFSM->update_delta(delta);
         // Serial.printf("delta = %d \n", delta);
-
     }
+
+    // menu FSM tick.
     menuFSM->tick();
 
     // delay(10);
