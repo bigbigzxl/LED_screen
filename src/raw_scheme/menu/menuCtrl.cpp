@@ -95,6 +95,15 @@ void menu_ctrl::show_home(void)
     _fresh_starttime();
 }
 
+bool menu_ctrl::show_spin_menu()
+{
+    while (cur_cmd_index < 0)
+    {
+        cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
+    }
+
+    cur_cmd_index %= all_cmd_index;
+}
 
 uint32_t menu_ctrl::read_info_from_FPGA(void)
 {

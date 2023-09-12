@@ -8,6 +8,11 @@ struct color
     uint8_t g;
     uint8_t b;
 }
+
+struct menu_item
+{
+    
+};
 class menu_ctrl
 {
 public:
