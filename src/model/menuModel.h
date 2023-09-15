@@ -13,16 +13,17 @@ struct color
 typedef enum
 {
     MENU_LIST_L1 = 0,   // entry
-    MENU_LSIT_L2,       // cmd
-    MENU_LIST_L3,       // set
+    MENU_CMD,       // cmd
     // can set more levels.
-    MENU_SET,
+    MENU_SET,  // set
 } MenuLevel;
 
 struct MenuItem
 {
-    MenuLevel menu_level;
-    char* str;
+    MenuLevel level;
+    char* name;
+    int32_t pos_value; //MENU_LIST_L1: cur cmd pos; other: cur value; 
+    bool (*callback) (int32_t param);
 };
 
 class menu_ctrl
@@ -52,11 +53,10 @@ public:
 
     char* parser_infos(uint32_t info);
 
-
     void show_volume(void);
     void show_home(void);
     void show_booting(void);
-
+    void init_menu_list();
     uint32_t info_from_FPGA = 0;
     uint32_t info_to_FPGA = 0;
     bool mute = false;
@@ -118,7 +118,7 @@ public:
     };
     int16_t cur_cmd_index = 0;
     int16_t all_cmd_num = sizeof(cmd_pos) / sizeof(cmd_pos[0]);;
-    unsigned char cur_test[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+    unsigned char cur_text[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
     uint8_t cur_cmd_pos[13] ={0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     MenuItem *all_menus = nullptr;
