@@ -194,7 +194,7 @@ public:
 	static CLEDController &addLeds(CLEDController *pLed, struct CRGB *data, int nLedsOrOffset, int nLedsIfOffset = 0);
 
 	/// @name Adding SPI based controllers
-  //@{
+    /// @{
 	/// Add an SPI based  CLEDController instance to the world.
 	/// There are two ways to call this method (as well as the other addLeds)
 	/// variations.  The first is with 2 arguments, in which case the arguments are  a pointer to

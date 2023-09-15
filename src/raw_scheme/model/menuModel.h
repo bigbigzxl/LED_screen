@@ -59,7 +59,8 @@ public:
 
     uint32_t info_from_FPGA = 0;
     uint32_t info_to_FPGA = 0;
-    bool mute = 0;
+    bool mute = false;
+    bool vol_changed = false;
     uint8_t cur_vol = 50;
     color rgb = {99,99,99}; 
     char* menu_name[] = {
@@ -120,10 +121,10 @@ public:
     unsigned char cur_test[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
     uint8_t cur_cmd_pos[13] ={0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    unsigned long LOADING_TIME = 5000; // 5s
-    unsigned long TIME_OUT     = 15000;    // 15s
-
     MenuItem *all_menus = nullptr;
+    unsigned long LOADING_TIME  = 5000; // 5s
+    unsigned long VOL_SHOW_TIME = 1000; // 1s
+    unsigned long TIME_OUT      = 15000;    // 15s
 };
 
 #endif

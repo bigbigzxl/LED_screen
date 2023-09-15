@@ -228,14 +228,7 @@ void Menu::callback_spin_cmd(int8_t delta)
   Serial.println("call_back: spin_cmd");
 }
 
-uint32_t MENU::read_info_from_FPGA(void)
-{
-  return 0;
-};
-bool MENU::write_info_to_FPGA(uint32_t infos)
-{
-  return 1;
-};
+
 
 void MENU::FSM_tick(unsigned long now)
 {
@@ -262,7 +255,7 @@ void MENU::FSM_tick(unsigned long now)
     case POWERON:
     {
       // do something before enter home page.
-      if (waitTime > LOADING_TIME)
+      if (waitTime > menu_handle->LOADING_TIME)
       {
         _newState(HOME, now);
       }
@@ -271,48 +264,77 @@ void MENU::FSM_tick(unsigned long now)
 
     case HOME:
     {
-      if (_buttonState == D_CLICK && !_mute)
+      if (_mute)
+      {
+        _newState(MUTE, now);
+      }
+      else if(_buttonState == D_CLICK)
       {
         _newState(MENU, now);
+      }
+      else if (_delta)
+      {
+        _newState(VOL, now);
+      }
+      break;
+    }
+
+    case MUTE:
+    {
+      if (!_mute)
+      {
+        _newState(HOME, now);
+      }
+      break;
+    }
+
+    case VOL:
+    {
+      if (waitTime > menu_handle->VOL_SHOW_TIME)
+      {
+        _newState(HOME, now);
       }
       break;
     }
 
     case MENU:
     {
-      if (_buttonState == D_CLICK)
-      {
-        _newState(CMD, now);
-      }
-      else if (_buttonState == L_CLICK)
+
+      if (waitTime > menu_handle->TIME_OUT || _buttonState == L_CLICK)
       {
         _newState(HOME, now);
       }
+      else if (_buttonState == D_CLICK)
+      {
+        _newState(CMD, now);
+      }
+
       break;
     }
 
     case CMD:
     {
-      if (_buttonState == D_CLICK)
-      {
-        _newState(SET, now);
-      }
-      else if (_buttonState == L_CLICK)
+      if (waitTime > menu_handle->TIME_OUT || _buttonState == L_CLICK)
       {
         _newState(HOME, now);
       }
+      else if (_buttonState == D_CLICK)
+      {
+        _newState(SET, now);
+      }
+
       break;
     }
 
     case SET:
     {
-      if (_buttonState == D_CLICK)
-      {
-        _newState(CMD, now);
-      }
-      else if (_buttonState == L_CLICK)
+      if (waitTime > menu_handle->TIME_OUT || _buttonState == L_CLICK)
       {
         _newState(HOME, now);
+      }
+      else if (_buttonState == D_CLICK)
+      {
+        _newState(CMD, now);
       }
       break;
     }
@@ -374,74 +396,63 @@ void MENU::FSM_executor(unsigned long now)
         _fresh_starttime(now);
       }
 
-      if (_mute)
-      {
-        set_voice_volume(0);
-        Display* screen = Display::getInstance();
-        screen->drawstring((unsigned char *)"  Mute  ");
-        screen->render();
+      menu_handle->show_home();
+      break;
+    }
 
-        _delta = 0;
-        _fresh_starttime();
-      }
-      else if (_delta)
+    case MUTE:
+    {
+      menu_handle->set_voice_volume(0);
+
+      Display* screen = Display::getInstance();
+      screen->drawstring((unsigned char *)"  Mute  ");
+      screen->render();
+
+      _reset_delta(); // mask spin action.
+      _fresh_starttime();
+      break;
+    }
+
+    case VOL:
+    {
+      if (_delta)
       {
-        int32_t volume_delta = _delta;
-        reset_delta(); // _delta = 0;
-        menu_handle->update_volume(volume_delta);
+        menu_handle->update_volume(_delta);
+        _reset_delta(); // product-consumer mode.
         menu_handle->show_volume();
         _fresh_starttime();
-
-        // callback_volume(_delta);
-        // _delta = 0;
-        // set_voice_volume(g_cur_vol);
-        // callback_home();
-        // _fresh_starttime();
       }
-      else
-      {
-        menu_handle->show_home();
-      }
-
       break;
     }
 
     case MENU:
     {
-      if (_buttonState == D_CLICK)
+      if (_delta)
       {
-        _newState(CMD, now);
+        menu_hadle->spin_L1_menu(_delta);
+        _reset_delta();
+        _fresh_starttime(); // in case timeout go home.
       }
-      else if (_buttonState == L_CLICK)
+      else if (waitTime >= TIME_OUT || _buttonState == L_CLICK)
       {
+        menu_handle->show_home();
         _newState(HOME, now);
+        _buttonState = IDLE;
+        break;
       }
       break;
     }
 
     case CMD:
     {
-      if (_buttonState == D_CLICK)
-      {
-        _newState(SET, now);
-      }
-      else if (_buttonState == L_CLICK)
-      {
-        _newState(HOME, now);
-      }
+
+
       break;
     }
 
     case SET:
     {
-      if (_buttonState == D_CLICK)
-      {
-        _newState(CMD, now);
-      }
-      else if (_buttonState == L_CLICK)
-      {
-        _newState(HOME, now);
-      }
+
       break;
     }
   }

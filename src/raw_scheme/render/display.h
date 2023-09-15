@@ -57,6 +57,7 @@ public:
     {
         return m_canvasBuffer;
     }
+    
 private:
     CRGB* m_canvasBuffer; // = (CRGB *)malloc(sizeof(CRGB) * _width * _height);
     CRGB* m_canvasBuffer_ping; // for animation.

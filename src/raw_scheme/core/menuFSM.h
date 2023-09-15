@@ -41,6 +41,8 @@ public:
         POWEROFF = 0,
         POWERON,
         HOME,
+        VOL,
+        MUTE,
         MENU,
         CMD,
         SET,
@@ -56,42 +58,42 @@ public:
 
     void tick(void);
 
-    void set_button_state(ButtonType t)
+    void _set_button_state(ButtonType t)
     {
         _buttonState = t;
 
         if (_cur_state == HOME)
         {
-            _mute = !_mute;
+            menu_handle->mute = !menu_handle->mute;
         }
     }
 
-    ButtonType get_button_state(ButtonType t)
+    ButtonType _get_button_state(ButtonType t)
     {
         return _buttonState;
     }
 
-    StateMachine get_cur_state(void)
+    StateMachine _get_cur_state(void)
     {
         return _cur_state;
     }
 
-    bool get_power_state()
+    INLINE bool _get_power_state()
     {
         return _power_state;
     }
 
-    void set_power_state(bool pw)
+    INLINE void _set_power_state(bool pw)
     {
         _power_state = pw;
     }
 
-    void update_delta(int d)
+    INLINE void _update_delta(int d)
     {
-        _delta = _delta == 0 ? d :  _delta + d;
+        _delta += d;
     }
 
-    void reset_delta(void)
+    INLINE void _reset_delta(void)
     {
         _delta =  0;
     }
@@ -100,14 +102,14 @@ public:
      *  save the last one to come back
      *  in cas of bouncing detection.
      */
-    void _newState(StateMachine nextState, unsigned long now)
+    INLINE void _newState(StateMachine nextState, unsigned long now)
     {
         _lastState = _cur_state;
         _cur_state = nextState;
         _startTime = now;
     }
 
-    void _fresh_starttime( unsigned long now)
+    INLINE void _fresh_starttime( unsigned long now)
     {
         _startTime = now;
     }
