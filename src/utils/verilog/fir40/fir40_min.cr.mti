@@ -1,0 +1,8 @@
+E:/FPGA/proj/fir40/fir40_min.v {1 {vlog -work work -vopt -stats=none E:/FPGA/proj/fir40/fir40_min.v
+Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016
+-- Compiling module fir40_min
+
+Top level modules:
+	fir40_min
+
+} {} {}}

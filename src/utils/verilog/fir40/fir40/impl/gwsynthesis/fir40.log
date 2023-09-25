@@ -1,0 +1,28 @@
+GowinSynthesis start
+Running parser ...
+Analyzing Verilog file 'E:\FPGA\proj\fir40\fir40\src\fir40.v'
+Undeclared symbol 'debug', assumed default net type 'wire'("E:\FPGA\proj\fir40\fir40\src\fir40.v":23)
+Compiling module 'fir40'("E:\FPGA\proj\fir40\fir40\src\fir40.v":1)
+WARN  (EX3780) : Using initial value of 'tap_40' since it is never assigned("E:\FPGA\proj\fir40\fir40\src\fir40.v":68)
+WARN  (EX3791) : Expression size 58 truncated to fit in target size 1("E:\FPGA\proj\fir40\fir40\src\fir40.v":23)
+WARN  (EX3791) : Expression size 40 truncated to fit in target size 32("E:\FPGA\proj\fir40\fir40\src\fir40.v":24)
+NOTE  (EX0101) : Current top module is "fir40"
+[5%] Running netlist conversion ...
+Running device independent optimization ...
+[10%] Optimizing Phase 0 completed
+[15%] Optimizing Phase 1 completed
+[25%] Optimizing Phase 2 completed
+Running inference ...
+[30%] Inferring Phase 0 completed
+[40%] Inferring Phase 1 completed
+[50%] Inferring Phase 2 completed
+[55%] Inferring Phase 3 completed
+Running technical mapping ...
+[60%] Tech-Mapping Phase 0 completed
+[65%] Tech-Mapping Phase 1 completed
+[75%] Tech-Mapping Phase 2 completed
+[80%] Tech-Mapping Phase 3 completed
+[90%] Tech-Mapping Phase 4 completed
+[95%] Generate netlist file "E:\FPGA\proj\fir40\fir40\impl\gwsynthesis\fir40.vg" completed
+[100%] Generate report file "E:\FPGA\proj\fir40\fir40\impl\gwsynthesis\fir40_syn.rpt.html" completed
+GowinSynthesis finish

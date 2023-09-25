@@ -1,0 +1,27 @@
+Reading netlist file: "E:\FPGA\proj\fir40\fir40\impl\gwsynthesis\fir40.vg"
+Parsing netlist file "E:\FPGA\proj\fir40\fir40\impl\gwsynthesis\fir40.vg" completed
+Processing netlist completed
+Running placement......
+[10%] Placement Phase 0 completed
+[20%] Placement Phase 1 completed
+[30%] Placement Phase 2 completed
+[50%] Placement Phase 3 completed
+Running routing......
+[60%] Routing Phase 0 completed
+[70%] Routing Phase 1 completed
+[80%] Routing Phase 2 completed
+[90%] Routing Phase 3 completed
+Running timing analysis......
+[95%] Timing analysis completed
+Placement and routing completed
+Bitstream generation in progress......
+Bitstream generation completed
+Running power analysis......
+[100%] Power analysis completed
+Generate file "E:\FPGA\proj\fir40\fir40\impl\pnr\fir40.power.html" completed
+Generate file "E:\FPGA\proj\fir40\fir40\impl\pnr\fir40.pin.html" completed
+Generate file "E:\FPGA\proj\fir40\fir40\impl\pnr\fir40.rpt.html" completed
+Generate file "E:\FPGA\proj\fir40\fir40\impl\pnr\fir40.rpt.txt" completed
+Generate file "E:\FPGA\proj\fir40\fir40\impl\pnr\fir40.tr.html" completed
+Fri Sep 08 23:18:17 2023
+

@@ -1,0 +1,11 @@
+-d E:\FPGA\proj\fir40\fir40\impl\gwsynthesis\fir40.vg
+-p GW2A-18C-eLQFP144-8
+-pn GW2A-LV18EQ144C8/I7
+-cfg E:\FPGA\proj\fir40\fir40\impl\pnr\device.cfg
+-bit
+-tr
+-ph
+-timing
+-cst_error
+-correct_hold 1
+-route_maxfan 23
