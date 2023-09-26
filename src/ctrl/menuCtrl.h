@@ -117,9 +117,9 @@ public:
         "2209"
     };
     int16_t cur_cmd_index = 0;
-    int16_t all_cmd_num = sizeof(cmd_pos) / sizeof(cmd_pos[0]);;
+    int16_t all_cmd_num = 0; // sizeof(all_menus) / sizeof(MenuItem);;
     unsigned char cur_text[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
-    uint8_t cur_cmd_pos[13] ={0,0,0,0,0,0,0,0,0,0,0,0,0};
+
 
     MenuItem *all_menus = nullptr;
     unsigned long LOADING_TIME  = 5000; // 5s

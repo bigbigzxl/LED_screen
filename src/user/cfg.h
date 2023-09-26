@@ -1,18 +1,8 @@
 #ifndef MENU_CFG_H
 #define MENU_CFG_H
-#include "../model/menuModel.h"
+#include "../ctrl/menuModel.h"
 #include "../render/display.h"
 
-
-bool adjust_volume(int32_t param)
-{
-    if (param > 0)
-    {
-
-    }
-
-    return true;
-}
 const MenuItem all_menus[] = 
 {   /**********************************************/
     MENU_LIST_L1,
@@ -21,7 +11,7 @@ const MenuItem all_menus[] =
     NULL,
         /******************************************/
         MENU_SET,
-        "000"
+        "000",
         0,
         adjust_volume,
         
