@@ -4,12 +4,12 @@
 #include "OneButton.h"
 #include "FastLED.h"
 
-#include "menu/menuFSM.h"
-#include "cmd/cmd.h"
+#include "fsm/menuFSM.h"
+#include "user/cfg.h"
 
 // EC11 config
 #define EC11_A_PIN 25
-#define EC11_B_PIN 26
+#define EC11_B_PIN 265
 #define EC11_K_PIN 4
 #define POWER_KEY_PIN 0 // to add.
 
@@ -29,7 +29,7 @@ ESP32Encoder spin(false); // true interrupt.
 OneButton spin_key(EC11_K_PIN, false, false);
 OneButton power_key(POWER_KEY_PIN);
 
-Menu* menuFSM = Menu::getInstance();
+MenuFsm* menuFSM = Menu::getInstance();
 
 void click(void);
 void doubleclick(void);
