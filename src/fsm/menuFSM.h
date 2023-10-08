@@ -11,18 +11,17 @@
 
 #include <Arduino.h>
 #include <string.h>
-#include "../cmd/cmd.h"
-#include "../display/display.h"
-#include "menuCtrl.h"
-// ----- Callback function types -----
+#include "../render/display.h"
+#include "../ctrl/menuCtrl.h"
 
+// ----- Callback function types -----
 extern "C" {
 typedef void (*callbackFunction)(void);
 typedef void (*parameterizedCallbackFunction)(void *);
 }
 
 
-class Menu
+class MenuFsm
 {
 public:
 
@@ -51,10 +50,10 @@ public:
         GAME
     };
 
-    static Menu* getInstance();
+    static MenuFsm* getInstance();
 
     // default constructor
-    Menu() = default;
+    MenuFsm() = default;
 
     void tick(void);
 
@@ -114,6 +113,10 @@ public:
         _startTime = now;
     }
 
+    INLINE void _release_button( unsigned long now)
+    {
+        _buttonState = ButtonType::IDLE;
+    }
     void FSM_tick(void); // only change status; no ops;
     void FSM_executor(void);
 
