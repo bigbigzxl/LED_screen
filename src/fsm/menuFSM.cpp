@@ -1,26 +1,26 @@
 #include "menuFSM.h"
 
 
-static Menu* g_FSM = nullptr;
-static Menu* g_menu_crtl = nullptr;
+static MenuFsm* g_FSM = nullptr;
+static MenuFsm* g_menu_crtl = nullptr;
 
-Menu* Menu::getInstance()
+MenuFsm* MenuFsm::getInstance()
 {
     if (g_FSM == nullptr)
     {
-        g_FSM = new Menu();
+        g_FSM = new MenuFsm();
     }
     return g_FSM;
 }
 
-void Menu::callback_boot(void)
+void MenuFsm::callback_boot(void)
 {
   Serial.println("call_back: boot");
   Display* screen = Display::getInstance();
   screen->showLogo(0);
 }
 
-void Menu::callback_mute()
+void MenuFsm::callback_mute()
 {
   if (_mute)
   {
@@ -37,7 +37,7 @@ void Menu::callback_mute()
   }
 }
 
-void Menu::callback_volume(int8_t delta)
+void MenuFsm::callback_volume(int8_t delta)
 {
     int16_t cur_vol = g_cur_vol + delta;
     cur_vol = cur_vol < 0 ? 0 : cur_vol;
@@ -70,7 +70,7 @@ void Menu::callback_volume(int8_t delta)
 
 
 
-void Menu::callback_home()
+void MenuFsm::callback_home()
 {
     // parser infos from FPGA;
 
@@ -84,7 +84,7 @@ void Menu::callback_home()
 }
 
 
-void Menu::callback_spin_menu()
+void MenuFsm::callback_spin_menu()
 {        
     while (g_cur_cmd_index < 0)
     {
@@ -133,13 +133,13 @@ void Menu::callback_spin_menu()
     Serial.println("call_back: spin_menu");
 }
 
-void Menu::callback_spin_set(int8_t delta)
+void MenuFsm::callback_spin_set(int8_t delta)
 {
 
 }
 
 
-void Menu::callback_spin_cmd(int8_t delta)
+void MenuFsm::callback_spin_cmd(int8_t delta)
 {
 
   Display* screen = Display::getInstance();
@@ -230,7 +230,7 @@ void Menu::callback_spin_cmd(int8_t delta)
 
 
 
-void MENU::FSM_tick(unsigned long now)
+void MenuFsm::FSM_tick(unsigned long now)
 {
   unsigned long waitTime = (now - _startTime);
 
@@ -243,7 +243,7 @@ void MENU::FSM_tick(unsigned long now)
       _newState(POWEROFF, now);
     }
 
-    case POWER_OFF:
+    case POWEROFF:
     {
       if (_power_state)
       {
@@ -264,7 +264,7 @@ void MENU::FSM_tick(unsigned long now)
 
     case HOME:
     {
-      if (_mute)
+      if (_buttonState == CLICK)
       {
         _newState(MUTE, now);
       }
@@ -281,7 +281,7 @@ void MENU::FSM_tick(unsigned long now)
 
     case MUTE:
     {
-      if (!_mute)
+      if (_buttonState == CLICK)
       {
         _newState(HOME, now);
       }
@@ -299,7 +299,6 @@ void MENU::FSM_tick(unsigned long now)
 
     case MENU:
     {
-
       if (waitTime > menu_handle->TIME_OUT || _buttonState == L_CLICK)
       {
         _newState(HOME, now);
@@ -341,20 +340,20 @@ void MENU::FSM_tick(unsigned long now)
   }
 }
 
-void MENU::FSM_executor(unsigned long now)
+void MenuFsm::FSM_executor(unsigned long now)
 {
   unsigned long waitTime = (now - _startTime);
 
   switch (_cur_state)
   {
-    case POWER_OFF:
+    case POWEROFF:
     {
       if (_lastState == POWERON)
       {
         // save context and clear the screen;
         // step 1: save context;
         // TODO: eq.reset params or save params to eeprom;
-        _mute = 0;
+        // _mute = 0;
 
         Display* screen = Display::getInstance();
         // waitting for FPGA ready down, then show logo 3s;
@@ -366,7 +365,6 @@ void MENU::FSM_executor(unsigned long now)
         {
           // step 2: clear the screen.
           screen->screenReset();
-
           // close the big lED.
         }
       }
@@ -402,14 +400,21 @@ void MENU::FSM_executor(unsigned long now)
 
     case MUTE:
     {
+      // first comsume the button state;
+      _release_button();
+
+      // TODO: volume slide in;
       menu_handle->set_voice_volume(0);
 
+      // render the statue;
+      
       Display* screen = Display::getInstance();
       screen->drawstring((unsigned char *)"  Mute  ");
       screen->render();
 
-      _reset_delta(); // mask spin action.
-      _fresh_starttime();
+      // mask the spin and timeout function.
+      _reset_delta(); 
+      _fresh_starttime(now);
       break;
     }
 
@@ -433,7 +438,7 @@ void MENU::FSM_executor(unsigned long now)
         _reset_delta();
         _fresh_starttime(); // in case timeout go home.
       }
-      else if (waitTime >= TIME_OUT || _buttonState == L_CLICK)
+      else if (waitTime >= menu_handle->TIME_OUT || _buttonState == L_CLICK)
       {
         menu_handle->show_home();
         _newState(HOME, now);
