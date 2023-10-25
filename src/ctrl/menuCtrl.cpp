@@ -1,5 +1,12 @@
 #include "menuCtrl.h"
 
+// ----- Callback function types -----
+extern "C" {
+typedef void (*callbackFunction)(void);
+typedef void (*parameterizedCallbackFunction)(void *);
+}
+
+
 void menu_ctrl::show_volume(void)
 {
     unsigned char unit    = 48 + cur_vol / 1 % 10;

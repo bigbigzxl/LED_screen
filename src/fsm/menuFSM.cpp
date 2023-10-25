@@ -68,8 +68,6 @@ void MenuFsm::callback_volume(int8_t delta)
     screen->render();
 }
 
-
-
 void MenuFsm::callback_home()
 {
     // parser infos from FPGA;
@@ -82,7 +80,6 @@ void MenuFsm::callback_home()
     screen->drawstring((unsigned char *)"AES P441");
     screen->render();
 }
-
 
 void MenuFsm::callback_spin_menu()
 {        
@@ -137,7 +134,6 @@ void MenuFsm::callback_spin_set(int8_t delta)
 {
 
 }
-
 
 void MenuFsm::callback_spin_cmd(int8_t delta)
 {

@@ -14,11 +14,7 @@
 #include "../render/display.h"
 #include "../ctrl/menuCtrl.h"
 
-// ----- Callback function types -----
-extern "C" {
-typedef void (*callbackFunction)(void);
-typedef void (*parameterizedCallbackFunction)(void *);
-}
+
 
 
 class MenuFsm
