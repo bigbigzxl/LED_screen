@@ -109,8 +109,8 @@ void loop()
     }
 
     // menu FSM tick.
-    g_menuFSM->FSM_tick();
-    g_menuFSM->FSM_executor();
+    g_menuFSM->tick();
+
 
     // delay(10);
     // unsigned long start = millis(); // current (relative) time in msecs.

@@ -3,6 +3,15 @@
 
 #include "../render/display.h"
 
+enum ButtonType : int
+{
+    IDLE = 0,
+    CLICK = 1,
+    D_CLICK = 2, // double click
+    L_CLICK = 3, // long click
+    UNKNOW = 99
+};
+
 struct color
 {
     uint8_t r;
@@ -29,15 +38,6 @@ struct MenuItem
 class menu_ctrl
 {
 public:
-    static menu_ctrl* getInstance()
-    {
-        if (g_menu_crtl == nullptr)
-        {
-            g_menu_crtl = new menu_ctrl();
-        }
-        return g_menu_crtl;
-    }
-
     void update_volume(int32_t v_delta)
     {
         cur_vol += v_delta;
@@ -47,7 +47,80 @@ public:
         cur_vol = cur_vol > 200 ? 200 : cur_vol;
     }
 
-    uint32_t read_info_from_FPGA(void);
+
+    static menu_ctrl* getInstance(void);
+
+    /*********I/O statue**********************/
+    bool is_powerON()
+    {
+        // 1: on
+        // 0: off
+        return _power_state == 1 ? true : false;
+    }
+
+    bool is_powerOFF()
+    {
+        // 1: on
+        // 0: off
+        return _power_state == 0 ? true : false;
+    }
+
+    void set_powerON(void)
+    {
+        _power_state = 1;
+    }
+
+    void set_powerOFF(void)
+    {
+        _power_state = 0;
+    }
+
+    int32_t _get_delta(void)
+    {
+        return _delta;
+    }
+
+    void _update_delta(int32_t d)
+    {
+        _delta += d;
+    }
+
+    void _reset_delta(void)
+    {
+        _delta =  0;
+    }
+
+    void _set_button_state(ButtonType t)
+    {
+        _buttonState = t;
+    }
+
+    ButtonType _get_button_state(ButtonType t)
+    {
+        return _buttonState;
+    }
+
+    void _release_button(void)
+    {
+        _buttonState = ButtonType::IDLE;
+    }
+    
+    bool _is_button_click()
+    {
+        return _buttonState == CLICK;
+    }
+
+    bool _is_button_doubleclick()
+    {
+        return _buttonState == D_CLICK;
+    }
+
+    bool _is_button_longclick()
+    {
+        return _buttonState == L_CLICK;
+    }
+
+    uint32_t get_info_from_FPGA(void);
     bool write_info_to_FPGA(uint32_t infos);
     bool get_fpga_ready(void);
 
@@ -63,59 +136,59 @@ public:
     bool vol_changed = false;
     uint8_t cur_vol = 50;
     color rgb = {99,99,99}; 
-    char* menu_name[] = {
-            "VOL  ",
-            "DSPL ",
-            "INPT ", 
-            "PHAS ",
-            "PLL ",
+    // char* menu_name[] = {
+    //         "VOL  ",
+    //         "DSPL ",
+    //         "INPT ", 
+    //         "PHAS ",
+    //         "PLL ",
 
-            "SYNC ",
-            "OUPT ",
-            "AMPL  ",
-            "TNT  ",
-            "ADIM ",
+    //         "SYNC ",
+    //         "OUPT ",
+    //         "AMPL  ",
+    //         "TNT  ",
+    //         "ADIM ",
 
-            "FW  ",
-            "SN ",
-            "DAT " 
+    //         "FW  ",
+    //         "SN ",
+    //         "DAT " 
     
-    };
-    int32_t cmd_pos[] = {
-            0,
-            1,
-            5,
-            10,
-            12,
+    // };
+    // int32_t cmd_pos[] = {
+    //         0,
+    //         1,
+    //         5,
+    //         10,
+    //         12,
 
-            14,
-            16,
-            18,
-            21,
-            23,
+    //         14,
+    //         16,
+    //         18,
+    //         21,
+    //         23,
 
-            26,
-            27,
-            28
-    };
-    char* cmd_set[] = {
-        "000", // 0~200 uint8
-        "CLR", "R00", "G00", "B00",// 0 ~255
+    //         26,
+    //         27,
+    //         28
+    // };
+    // char* cmd_set[] = {
+    //     "000", // 0~200 uint8
+    //     "CLR", "R00", "G00", "B00",// 0 ~255
 
-        "AES", "COS", "USB", "I2S", "BLT",
-        "  0", "180",
-        "FAST", "ACCU",
+    //     "AES", "COS", "USB", "I2S", "BLT",
+    //     "  0", "180",
+    //     "FAST", "ACCU",
         
-        "INT", "EXT",
-        "HPA", "PRE",
-        "LO", "MI", "HI",
-        "OFF", " ON",
-        " 5S", "10S", "OFF",
+    //     "INT", "EXT",
+    //     "HPA", "PRE",
+    //     "LO", "MI", "HI",
+    //     "OFF", " ON",
+    //     " 5S", "10S", "OFF",
 
-        "S001",
-        "S0xxx",
-        "2209"
-    };
+    //     "S001",
+    //     "S0xxx",
+    //     "2209"
+    // };
     int16_t cur_cmd_index = 0;
     int16_t all_cmd_num = 0; // sizeof(all_menus) / sizeof(MenuItem);;
     unsigned char cur_text[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
@@ -125,6 +198,12 @@ public:
     unsigned long LOADING_TIME  = 5000; // 5s
     unsigned long VOL_SHOW_TIME = 1000; // 1s
     unsigned long TIME_OUT      = 15000;    // 15s
+
+    volatile  bool _power_state = 0;         // 0 for power off; 1 for power on.
+    volatile  bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;
+    volatile  ButtonType _buttonState = IDLE;
+    volatile  int32_t _delta = 0;
+    unsigned long _startTime;      // start of current input change to checking timeout;
 };
 
 #endif

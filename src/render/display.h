@@ -6,6 +6,7 @@
 #include "FastLED.h"
 #include "glcdfont.h"
 // #include "cmd/cmd.h"
+#include "../ctrl/menuCtrl.h"
 
 #define INLINE inline __attribute__((always_inline))
 #define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
@@ -59,6 +60,7 @@ public:
     }
     
 private:
+    friend class menu_ctrl;
     CRGB* m_canvasBuffer; // = (CRGB *)malloc(sizeof(CRGB) * _width * _height);
     CRGB* m_canvasBuffer_ping; // for animation.
     CRGB* m_canvasBuffer_pong; // for animation.

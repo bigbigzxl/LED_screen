@@ -6,7 +6,16 @@ typedef void (*callbackFunction)(void);
 typedef void (*parameterizedCallbackFunction)(void *);
 }
 
+static menu_ctrl* g_menu_crtl = nullptr;
 
+menu_ctrl* menu_ctrl::getInstance()
+{
+    if (g_menu_crtl == nullptr)
+    {
+        g_menu_crtl = new menu_ctrl();
+    }
+    return g_menu_crtl;
+}
 void menu_ctrl::show_volume(void)
 {
     unsigned char unit    = 48 + cur_vol / 1 % 10;
@@ -71,11 +80,11 @@ void menu_ctrl::show_booting(void)
         unsigned long end = start;
         while(end - start < 1000)
         {   
-            fadeOutChar(7, 240);
+            screen->fadeOutChar(7, 240);
             i++;
             i %= 4;
-            m_canvasBuffer[pix_pos[i]] = CRGB::Red;
-            render();
+            screen->m_canvasBuffer[pix_pos[i]] = CRGB::Red;
+            screen->render();
             delay(10);
             end = millis(); // current (relative) time in msecs.
         }
@@ -99,20 +108,19 @@ void menu_ctrl::show_home(void)
     screen->setCharColor(100,100,100);
     screen->drawstring((unsigned char *)"AES P441");
     screen->render();
-    _fresh_starttime();
 }
 
 bool menu_ctrl::show_spin_menu()
 {
-    while (cur_cmd_index < 0)
-    {
-        cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
-    }
+    // while (cur_cmd_index < 0)
+    // {
+    //     cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
+    // }
 
-    cur_cmd_index %= all_cmd_index;
+    // cur_cmd_index %= all_cmd_index;
 }
 
-uint32_t menu_ctrl::read_info_from_FPGA(void)
+uint32_t menu_ctrl::get_info_from_FPGA(void)
 {
     uint32_t info_r = 0;
     // get info
@@ -121,10 +129,12 @@ uint32_t menu_ctrl::read_info_from_FPGA(void)
 
     return info_r;
 }
+
 bool menu_ctrl::write_info_to_FPGA(uint32_t infos)
 {
     return true;
 }
+
 bool menu_ctrl::get_fpga_ready(void)
 {
     return true;
