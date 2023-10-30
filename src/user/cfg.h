@@ -13,7 +13,8 @@ const MenuItem g_user_menus[] =
         MENU_SET,
         "000",
         0,
-        adjust_volume,
+        NULL,
+        // adjust_volume,
         
     /**********************************************/
     MENU_LIST_L1,
@@ -24,22 +25,26 @@ const MenuItem g_user_menus[] =
         MENU_CMD,
         "CLR",
         -1,
-        clear_color_r,
+        NULL,
+        // clear_color_r,
         /******************************************/
         MENU_SET,
         "R00",
         0,
-        set_color_g,
+        NULL,
+        // set_color_g,
         /******************************************/
         MENU_SET,
         "G00",
         -1,
-        set_color,
+        NULL,
+        // set_color,
         /******************************************/
         MENU_SET,
         "B00",
         -1,
-        set_color_b,
+        NULL,
+        // set_color_b,
 
     /**********************************************/
     MENU_LIST_L1,

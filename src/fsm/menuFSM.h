@@ -38,7 +38,10 @@ public:
 
     static MenuFsm* getInstance();
     void tick(void);
-
+    menu_ctrl* get_ctrl_handle()
+    {
+        return _menu_handle;
+    }
 private:
     /**
      *  Advance to a new state and save the last one to come back

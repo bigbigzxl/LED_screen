@@ -46,7 +46,12 @@ public:
         cur_vol = cur_vol < 0 ? 0 : cur_vol;
         cur_vol = cur_vol > 200 ? 200 : cur_vol;
     }
-
+    void set_voice_volume(int32_t v)
+    {
+        // clip
+        cur_vol = v < 0 ? 0 : v;
+        cur_vol = v > 200 ? 200 : v;
+    }
 
     static menu_ctrl* getInstance(void);
 
@@ -120,16 +125,34 @@ public:
         return _buttonState == L_CLICK;
     }
 
+    bool _is_home_timeout(int32_t wait_time)
+    {
+        return wait_time > HOME_TIMEOUT;
+    }
+
+    bool _is_loading_timeout(int32_t wait_time)
+    {
+        return wait_time > LOADING_TIMEOUT;
+    }
+
+    bool _is_volume_timeout(int32_t wait_time)
+    {
+        return wait_time > VOL_SHOW_TIMEOUT;
+    }
+
     uint32_t get_info_from_FPGA(void);
     bool write_info_to_FPGA(uint32_t infos);
     bool get_fpga_ready(void);
+    bool info_format_check(uint32_t info);
 
     char* parser_infos(uint32_t info);
 
     void show_volume(void);
     void show_home(void);
     void show_booting(void);
-    void init_menu_list();
+    void init_menu_list(void);
+    bool show_spin_menu(void);
+    void spin_L1_menu(int32_t delta);
     uint32_t info_from_FPGA = 0;
     uint32_t info_to_FPGA = 0;
     bool mute = false;
@@ -195,9 +218,9 @@ public:
 
 
     MenuItem *all_menus = nullptr;
-    unsigned long LOADING_TIME  = 5000; // 5s
-    unsigned long VOL_SHOW_TIME = 1000; // 1s
-    unsigned long TIME_OUT      = 15000;    // 15s
+    unsigned long LOADING_TIMEOUT   = 5000; // 5s
+    unsigned long VOL_SHOW_TIMEOUT  = 1000; // 1s
+    unsigned long HOME_TIMEOUT      = 15000;    // 15s
 
     volatile  bool _power_state = 0;         // 0 for power off; 1 for power on.
     volatile  bool _menu_selected_state = 0; // 0 for release state; 1 for selected state;

@@ -118,6 +118,11 @@ bool menu_ctrl::show_spin_menu()
     // }
 
     // cur_cmd_index %= all_cmd_index;
+    return true;
+}
+void menu_ctrl::spin_L1_menu(int32_t delta)
+{
+
 }
 
 uint32_t menu_ctrl::get_info_from_FPGA(void)
@@ -148,4 +153,5 @@ bool menu_ctrl::info_format_check(uint32_t info)
 char* menu_ctrl::parser_infos(uint32_t info)
 {
     uint8_t info_2_idx = 0;
+    return nullptr;
 }

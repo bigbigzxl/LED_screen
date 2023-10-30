@@ -1,6 +1,5 @@
 #include "menuFSM.h"
 
-
 static MenuFsm* g_FSM = nullptr;
 
 MenuFsm* MenuFsm::getInstance()
@@ -243,15 +242,15 @@ void MenuFsm::_FSM_tick(unsigned long now)
 {
   unsigned long waitTime = (now - _startTime);
 
+  // hight prior;
+  // power off trigered or init power-off state;
+  if (_menu_handle->is_powerOFF()) 
+  {
+    _newState(POWEROFF, now);
+  }
+
   switch (_cur_state)
   {
-    // hight prior;
-    // power off trigered or init power-off state;
-    if (_menu_handle->is_powerOFF()) 
-    {
-      _newState(POWEROFF, now);
-    }
-
     case POWEROFF:
     {
       if (_menu_handle->is_powerON())
@@ -264,7 +263,7 @@ void MenuFsm::_FSM_tick(unsigned long now)
     case POWERON:
     {
       // do something before enter home page.
-      if (waitTime > _menu_handle->LOADING_TIME)
+      if (_menu_handle->_is_loading_timeout(waitTime))
       {
         _newState(HOME, now);
       }
@@ -299,18 +298,18 @@ void MenuFsm::_FSM_tick(unsigned long now)
 
     case VOL:
     {
-      if (waitTime > _menu_handle->VOL_SHOW_TIME)
+      if (_menu_handle->_is_volume_timeout(waitTime))
       {
         _newState(HOME, now);
 
 
     case MENU:
     {
-      if (waitTime > _menu_handle->TIME_OUT || _menu_handle->_is_button_longclick())
+      if (_menu_handle->_is_home_timeout(waitTime) || _menu_handle->_is_button_longclick())
       {
         _newState(HOME, now);
       }
-      else if (_buttonState == D_CLICK)
+      else if (_menu_handle->_is_button_doubleclick())
       {
         _newState(CMD, now);
       }
@@ -320,11 +319,11 @@ void MenuFsm::_FSM_tick(unsigned long now)
 
     case CMD:
     {
-      if (waitTime > _menu_handle->TIME_OUT || _menu_handle->_is_button_longclick())
+      if (_menu_handle->_is_home_timeout(waitTime) || _menu_handle->_is_button_longclick())
       {
         _newState(HOME, now);
       }
-      else if (_buttonState == D_CLICK)
+      else if (_menu_handle->_is_button_doubleclick())
       {
         _newState(SET, now);
       }
@@ -334,16 +333,18 @@ void MenuFsm::_FSM_tick(unsigned long now)
 
     case SET:
     {
-      if (waitTime > _menu_handle->TIME_OUT || _menu_handle->_is_button_longclick())
+      if (_menu_handle->_is_home_timeout(waitTime) || _menu_handle->_is_button_longclick())
       {
         _newState(HOME, now);
       }
-      else if (_buttonState == D_CLICK)
+      else if (_menu_handle->_is_button_doubleclick())
       {
         _newState(CMD, now);
       }
       break;
     }
+  }
+}
   }
 }
 
@@ -390,7 +391,7 @@ void MenuFsm::_FSM_executor(unsigned long now)
 
     case HOME:
     {
-      if (waitTime > _menu_handle->TIME_OUT)
+      if (_menu_handle->_is_home_timeout(waitTime))
       {
         Display* screen = Display::getInstance();
         screen->setCharColor(100,0,0);
@@ -400,7 +401,7 @@ void MenuFsm::_FSM_executor(unsigned long now)
         // re-trying connect to FPGA......
       }
 
-      _menu_handle->show_home(now);
+      _menu_handle->show_home();
 
       _fresh_starttime(now);
       break;
@@ -409,7 +410,7 @@ void MenuFsm::_FSM_executor(unsigned long now)
     case MUTE:
     {
       // first comsume the button state;
-      _release_button();
+      _menu_handle->_release_button();
 
       // TODO: volume slide in;
       _menu_handle->set_voice_volume(0);
@@ -421,36 +422,38 @@ void MenuFsm::_FSM_executor(unsigned long now)
       screen->render();
 
       // mask the spin and timeout function.
-      _reset_delta(); 
+      _menu_handle->_reset_delta(); 
       _fresh_starttime(now);
       break;
     }
 
     case VOL:
     {
-      if (_delta)
+      int32_t delta = _menu_handle->_get_delta();
+      if (delta)
       {
-        _menu_handle->update_volume(_delta);
-        _reset_delta(); // product-consumer mode.
+        _menu_handle->update_volume(delta);
+        _menu_handle->_reset_delta(); // product-consumer mode.
         _menu_handle->show_volume();
-        _fresh_starttime();
+        _fresh_starttime(now);
       }
       break;
     }
 
     case MENU:
     {
-      if (_delta)
+      int32_t delta = _menu_handle->_get_delta();
+      if (delta)
       {
-        menu_hadle->spin_L1_menu(_delta);
-        _reset_delta();
-        _fresh_starttime(); // in case timeout go home.
+        _menu_handle->spin_L1_menu(delta);
+        _menu_handle->_reset_delta();
+        _fresh_starttime(now); // in case timeout go home.
       }
-      else if (waitTime >= _menu_handle->TIME_OUT || _buttonState == L_CLICK)
+      else if (_menu_handle->_is_home_timeout(waitTime) || _menu_handle->_is_button_longclick())
       {
         _menu_handle->show_home();
         _newState(HOME, now);
-        _buttonState = IDLE;
+        _menu_handle->_release_button();
         break;
       }
       break;

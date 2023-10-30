@@ -23,7 +23,6 @@
 
 /**************global value*******************************/
 int32_t g_lastEncoderValue = 0;
-int32_t g_delta = 0;
 MenuFsm* g_menuFSM = MenuFsm::getInstance();
 ESP32Encoder g_spin(false); // true interrupt.
 OneButton g_spinKey(EC11_K_PIN, false, false);
@@ -37,31 +36,31 @@ void longclick(void);
 // callback function for power key;
 void poweron()
 {
-    if (!g_menuFSM->get_power_state())
+    if (g_menuFSM->get_ctrl_handle()->is_powerOFF())
     {
-        g_menuFSM->set_power_state(true); // g_powerKey on
+        g_menuFSM->get_ctrl_handle()->set_powerON(); // g_powerKey on
     }
 }
 
 void poweroff()
 {
-    g_menuFSM->set_power_state(false); // g_powerKey off if long click the button any time.
+    g_menuFSM->get_ctrl_handle()->set_powerOFF(); // g_powerKey off if long click the button any time.
 }
 
 void click()
 {
-    g_menuFSM->set_button_state(Menu::ButtonType::CLICK);
+    g_menuFSM->get_ctrl_handle()->_set_button_state(ButtonType::CLICK);
 }
 
 void doubleclick()
 {
-    g_menuFSM->set_button_state(Menu::ButtonType::D_CLICK);
+    g_menuFSM->get_ctrl_handle()->_set_button_state(ButtonType::D_CLICK);
 }
 
 // 按键长按回调函数
 void longclick()
 {
-    g_menuFSM->set_button_state(Menu::ButtonType::L_CLICK);
+    g_menuFSM->get_ctrl_handle()->_set_button_state(ButtonType::L_CLICK);
 }
 
 void setup()
@@ -101,11 +100,9 @@ void loop()
     if (g_lastEncoderValue != g_spin.getCount())
     {
         int now_count = g_spin.getCount();
-        g_delta = now_count - g_lastEncoderValue; // global value
         g_lastEncoderValue = now_count;
 
-        g_menuFSM->update_g_delta(g_delta);
-        // Serial.printf("g_delta = %d \n", g_delta);
+        g_menuFSM->get_ctrl_handle()->_update_delta(now_count - g_lastEncoderValue);
     }
 
     // menu FSM tick.
