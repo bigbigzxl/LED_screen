@@ -147,6 +147,8 @@ public:
 
     char* parser_infos(uint32_t info);
 
+    bool menu_check(const MenuItem* menus) const;
+
     void show_volume(void);
     void show_home(void);
     void show_booting(void);
@@ -217,7 +219,8 @@ public:
     unsigned char cur_text[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
 
-    MenuItem *all_menus = nullptr;
+    MenuItem *_all_menus = nullptr;
+    uint32_t _menu_items_num = 0;
     unsigned long LOADING_TIMEOUT   = 5000; // 5s
     unsigned long VOL_SHOW_TIMEOUT  = 1000; // 1s
     unsigned long HOME_TIMEOUT      = 15000;    // 15s

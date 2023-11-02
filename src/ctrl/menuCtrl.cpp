@@ -1,4 +1,5 @@
 #include "menuCtrl.h"
+#include "../user/cfg.h"
 
 // ----- Callback function types -----
 extern "C" {
@@ -7,6 +8,22 @@ typedef void (*parameterizedCallbackFunction)(void *);
 }
 
 static menu_ctrl* g_menu_crtl = nullptr;
+
+menu_ctrl::menu_ctrl()
+: _all_menus(g_user_menus),
+
+{
+    _menu_items_num = sizeof(_all_menus) / sizeof(MenuItem);
+    menu_check();
+}
+
+bool menu_ctrl::menu_check(const MenuItem* menus) const
+{
+    for (int i = 0; i < _menu_items_num; ++i)
+    {
+        
+    }
+}
 
 menu_ctrl* menu_ctrl::getInstance()
 {
