@@ -1,28 +1,47 @@
 #include "menuCtrl.h"
 #include "../user/cfg.h"
 
-// ----- Callback function types -----
-extern "C" {
-typedef void (*callbackFunction)(void);
-typedef void (*parameterizedCallbackFunction)(void *);
-}
 
 static menu_ctrl* g_menu_crtl = nullptr;
 
 menu_ctrl::menu_ctrl()
-: _all_menus(g_user_menus),
+: _all_menus_start(g_user_menus),
 
 {
-    _menu_items_num = sizeof(_all_menus) / sizeof(MenuItem);
+    _menu_items_num = sizeof(_all_menus_start) / sizeof(MenuItem);
+    _cur_menu = _all_menus_start;
+    _L1_menu_pos = new std::vector<int32_t>();
     menu_check();
+    menu_init();
+
 }
 
-bool menu_ctrl::menu_check(const MenuItem* menus) const
+bool menu_ctrl::menu_init(void) const
+{
+    for (uint32_t pos = 0; pos < _menu_items_num; pos++)
+    {
+        if (_all_menus_start[i].level == MenuLevel::MENU_LIST_L1)
+        {
+            _L1_menu_pos->push_back(pos);
+        }
+    }
+
+    if (_L1_menu_pos->size() == 0)
+    {
+        // show error
+        return false;
+    }
+
+}
+
+bool menu_ctrl::menu_check(void) const
 {
     for (int i = 0; i < _menu_items_num; ++i)
     {
         
     }
+
+    return true;
 }
 
 menu_ctrl* menu_ctrl::getInstance()
@@ -30,6 +49,11 @@ menu_ctrl* menu_ctrl::getInstance()
     if (g_menu_crtl == nullptr)
     {
         g_menu_crtl = new menu_ctrl();
+        if (!g_menu_crtl->init())
+        {
+            delete g_menu_crtl;
+            return nullptr;
+        }
     }
     return g_menu_crtl;
 }
@@ -127,19 +151,19 @@ void menu_ctrl::show_home(void)
     screen->render();
 }
 
-bool menu_ctrl::show_spin_menu()
-{
-    // while (cur_cmd_index < 0)
-    // {
-    //     cur_cmd_index = (cur_cmd_index + all_cmd_num) % all_cmd_num;
-    // }
-
-    // cur_cmd_index %= all_cmd_index;
-    return true;
-}
 void menu_ctrl::spin_L1_menu(int32_t delta)
 {
+    if (_cur_menu->level != MenuLevel::MENU_LIST_L1)
+    {
+        return;
+    }
 
+    //TODO: animation code.
+    while(delta--)
+    {
+        _cur_menu->parameterizedCallbackFunction(1); // forward one step;
+        // time delay
+    }
 }
 
 uint32_t menu_ctrl::get_info_from_FPGA(void)

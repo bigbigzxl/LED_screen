@@ -3,6 +3,10 @@
 #include "../ctrl/menuCtrl.h"
 #include "../render/display.h"
 
+Display* g_screen = Display::getInstance();
+
+
+
 const MenuItem g_user_menus[] = 
 {   /**********************************************/
     MENU_LIST_L1,
@@ -12,10 +16,8 @@ const MenuItem g_user_menus[] =
         /******************************************/
         MENU_SET,
         "000",
-        0,
-        NULL,
-        // adjust_volume,
-        
+        0,     // volume value
+        NULL,  // adjust volume function.
     /**********************************************/
     MENU_LIST_L1,
     "DSPL",

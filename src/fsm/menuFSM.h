@@ -14,9 +14,6 @@
 #include "../render/display.h"
 #include "../ctrl/menuCtrl.h"
 
-
-
-
 class MenuFsm
 {
 public:

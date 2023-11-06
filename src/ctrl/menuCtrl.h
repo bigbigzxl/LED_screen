@@ -1,7 +1,14 @@
 #ifndef MENU_CTRL_H
 #define MENU_CTRL_H
-
+#include <vector>
 #include "../render/display.h"
+
+// ----- Callback function types -----
+extern "C" {
+typedef void (*callbackFunction)(void);
+// typedef void (*parameterizedCallbackFunction)(void *);
+typedef void (*parameterizedCallbackFunction)(int32_t param);
+}
 
 enum ButtonType : int
 {
@@ -32,7 +39,7 @@ struct MenuItem
     MenuLevel level;
     char* name;
     int32_t pos_value; //MENU_LIST_L1: cur cmd pos; other: cur value; 
-    bool (*callback) (int32_t param);
+    bool (*parameterizedCallbackFunction) (int32_t param);
 };
 
 class menu_ctrl
@@ -147,13 +154,14 @@ public:
 
     char* parser_infos(uint32_t info);
 
+    bool menu_init(void) const;
     bool menu_check(const MenuItem* menus) const;
 
     void show_volume(void);
     void show_home(void);
     void show_booting(void);
     void init_menu_list(void);
-    bool show_spin_menu(void);
+
     void spin_L1_menu(int32_t delta);
     uint32_t info_from_FPGA = 0;
     uint32_t info_to_FPGA = 0;
@@ -214,13 +222,19 @@ public:
     //     "S0xxx",
     //     "2209"
     // };
+    
+    
+    
     int16_t cur_cmd_index = 0;
     int16_t all_cmd_num = 0; // sizeof(all_menus) / sizeof(MenuItem);;
     unsigned char cur_text[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
 
-    MenuItem *_all_menus = nullptr;
+    MenuItem *_all_menus_start = nullptr;
+    MenuItem *_cur_menu = nullptr;
     uint32_t _menu_items_num = 0;
+    std::vector<int32_t>* _L1_menu_pos;
+
     unsigned long LOADING_TIMEOUT   = 5000; // 5s
     unsigned long VOL_SHOW_TIMEOUT  = 1000; // 1s
     unsigned long HOME_TIMEOUT      = 15000;    // 15s
